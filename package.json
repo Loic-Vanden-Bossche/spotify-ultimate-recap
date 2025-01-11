@@ -6,9 +6,15 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "prisma": "cross-env POSTGRES_PRISMA_URL=postgresql://root:root@localhost:5432/spotify-ultimate-recap prisma"
   },
   "dependencies": {
+    "@prisma/client": "^6.2.1",
     "astro": "^5.1.5"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "prisma": "^6.2.1"
   }
 }
