@@ -1,1 +1,1 @@
-# spotify-ultimate-recap
+# Spotify Ultimate Recap
