@@ -12,7 +12,7 @@ export const UploadStatus = () => {
     const onStart = (data: { fileName: string }) => {
       setFileName(data.fileName);
       setIsError(false);
-      setStatus("Uploading started...");
+      setStatus("Envoi du fichier en cours...");
     };
 
     const onProgress = (data: { status: string }) => {

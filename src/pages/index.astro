@@ -2,18 +2,34 @@
 import Welcome from "../components/Home.astro";
 import Layout from "../layouts/Layout.astro";
 import { PrismaClient } from "@prisma/client";
+import { v4 as uuid } from "uuid";
+
+export const prerender = false;
 
 const prisma = new PrismaClient();
 
-await prisma.post.create({
-  data: {
-    content: "Hello Astro, Vercel and Prisma",
-  },
-});
+// await prisma.post.create({
+//   data: {
+//     content: "Hello Astro, Vercel and Prisma",
+//   },
+// });
+
+const cookies = Astro.request.headers.get("cookie");
+const uuidCookie = cookies && cookies.includes("uuid");
+
+let userUUID;
+
+if (!uuidCookie) {
+  userUUID = uuid();
+  Astro.response.headers.set("Set-Cookie", `uuid=${userUUID}`);
+} else {
+  userUUID = cookies.split("uuid=")[1].split(";")[0];
+}
 ---
 
 <Layout>
   <Welcome />
+  {userUUID}
 </Layout>
 
 <style is:global>
