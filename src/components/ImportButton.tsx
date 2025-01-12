@@ -1,8 +1,37 @@
-import { type ChangeEvent, type MouseEvent, useRef } from "react";
+import {
+  type ChangeEvent,
+  type MouseEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import eventBus from "../utils/eventBus.ts";
+import { Loader } from "./Loader";
 
 export const ImportButton = () => {
   const hiddenFileInput = useRef<HTMLInputElement | null>(null);
+
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const onStart = () => {
+      setLoading(true);
+    };
+
+    const onStop = () => {
+      setLoading(false);
+    };
+
+    eventBus.on("upload:start", onStart);
+    eventBus.on("upload:complete", onStop);
+    eventBus.on("upload:error", onStop);
+
+    return () => {
+      eventBus.off("upload:start", onStart);
+      eventBus.off("upload:complete", onStop);
+      eventBus.off("upload:error", onStop);
+    };
+  }, []);
 
   const handleClick = (_: MouseEvent<HTMLButtonElement>) => {
     hiddenFileInput.current?.click();
@@ -19,7 +48,6 @@ export const ImportButton = () => {
     const formData = new FormData();
     formData.append("file", file);
 
-    // Emit event that file upload started
     eventBus.emit("upload:start", { fileName: file.name });
 
     const response = await fetch("/api/sse", {
@@ -82,10 +110,18 @@ export const ImportButton = () => {
   return (
     <>
       <button
-        className="bg-black text-white p-2 rounded-md"
+        className={`bg-black text-white px-4 py-2 rounded-md flex items-center justify-center transition-all duration-300 ease-in-out disabled:opacity-80`}
         onClick={handleClick}
+        disabled={loading}
       >
-        Import Spotify Data
+        <span
+          className={`inline-block h-5 transition-all duration-300 ${
+            loading ? "opacity-100 w-5 mr-4" : "opacity-0 w-0 mr-0"
+          }`}
+        >
+          {loading && <Loader />}
+        </span>
+        <p>Import Spotify Data</p>
       </button>
       <input
         className="hidden"

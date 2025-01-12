@@ -5,18 +5,18 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// await prisma.post.create({
-// 	data: {
-// 		content: "Hello Astro, Vercel and Prisma",
-// 	},
-// });
+await prisma.post.create({
+  data: {
+    content: "Hello Astro, Vercel and Prisma",
+  },
+});
 ---
 
 <Layout>
   <Welcome />
 </Layout>
 
-<style>
+<style is:global>
   @tailwind base;
   @tailwind components;
   @tailwind utilities;
@@ -27,7 +27,7 @@ const prisma = new PrismaClient();
       font-style: normal;
       font-weight: 400;
       font-display: swap;
-      src: url(fonts/GothamMedium.ttf) format("woff2");
+      src: url(/fonts/GothamMedium.ttf) format("woff2");
     }
   }
 </style>

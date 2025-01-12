@@ -23,13 +23,11 @@ export default () => {
       setStatus(`Error: ${data.error}`);
     };
 
-    // Subscribe to events
     eventBus.on("upload:start", onStart);
     eventBus.on("upload:progress", onProgress);
     eventBus.on("upload:complete", onComplete);
     eventBus.on("upload:error", onError);
 
-    // Cleanup listeners on unmount
     return () => {
       eventBus.off("upload:start", onStart);
       eventBus.off("upload:progress", onProgress);
