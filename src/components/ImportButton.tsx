@@ -42,6 +42,8 @@ export const ImportButton = () => {
 
     const fileUploaded = event.target.files[0];
     handleFileUpload(fileUploaded);
+
+    event.target.value = "";
   };
 
   const handleFileUpload = async (file: File) => {
@@ -50,7 +52,7 @@ export const ImportButton = () => {
 
     eventBus.emit("upload:start", { fileName: file.name });
 
-    const response = await fetch("/api/sse", {
+    const response = await fetch("/api/upload-file", {
       method: "POST",
       body: formData,
     });
@@ -81,24 +83,31 @@ export const ImportButton = () => {
         remaining = lines.pop() || "";
 
         for (const line of lines) {
-          if (line.startsWith("event: complete")) {
-            console.log("File processing complete. Closing SSE.");
-            eventBus.emit("upload:complete", {
-              message: "Processing complete",
-            });
-            await reader.cancel();
-            return;
-          }
+          const eventMatch = line.match(/event: ([\w-]+)(.*)/);
+          if (!line) continue;
 
-          if (line.startsWith("data: ")) {
-            const rawData = line.replace("data: ", "").trim();
-            try {
-              const eventData = JSON.parse(rawData);
-              console.log("SSE Message:", eventData);
-              eventBus.emit("upload:progress", eventData); // Emit progress updates
-            } catch (err) {
-              console.error("Error parsing SSE message:", err);
+          if (eventMatch) {
+            const [, eventName] = eventMatch;
+
+            const dataMatch = line.match(/data: (.*)/);
+            const data = dataMatch?.[1];
+
+            switch (eventName) {
+              case "complete":
+              case "error":
+                await reader.cancel();
+                break;
             }
+
+            if (data) {
+              try {
+                eventBus.emit(`upload:${eventName}`, JSON.parse(data));
+              } catch (err) {
+                console.error("Error parsing SSE message:", err);
+              }
+            }
+          } else {
+            console.error("Invalid SSE message: no event");
           }
         }
       }
