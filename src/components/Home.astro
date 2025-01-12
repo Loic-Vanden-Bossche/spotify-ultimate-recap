@@ -1,11 +1,11 @@
 ---
 import Header from "./Header.astro";
-import UploadStatus from "./UploadStatus";
+import { UploadStatus } from "./UploadStatus";
 ---
 
 <Header />
-<main>
-  <section>
+<main class="h-full relative">
+  <section class="absolute inset-0 flex flex-col items-center justify-center">
     <UploadStatus client:load />
   </section>
 </main>

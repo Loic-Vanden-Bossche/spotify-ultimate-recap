@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import eventBus from "../utils/eventBus.ts";
+import { Loader } from "./Loader.tsx";
 
-export default () => {
+export const UploadStatus = () => {
   const [status, setStatus] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [visible, setVisible] = useState(false); // State to control animation
 
   useEffect(() => {
     const onStart = (data: { fileName: string }) => {
@@ -16,11 +18,13 @@ export default () => {
     };
 
     const onComplete = () => {
-      setStatus("Processing complete!");
+      setVisible(false); // Trigger exit animation
+      setTimeout(() => setStatus(null), 300); // Wait for animation to finish before removing
     };
 
     const onError = (data: { error: string }) => {
       setStatus(`Error: ${data.error}`);
+      setVisible(false); // Trigger exit animation
     };
 
     eventBus.on("upload:start", onStart);
@@ -36,11 +40,22 @@ export default () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (status) {
+      setVisible(true);
+    }
+  }, [status]);
+
   return (
-    <div className="upload-status">
-      <h3>Upload Status</h3>
-      {fileName && <p>File: {fileName}</p>}
-      {status && <p>Status: {status}</p>}
-    </div>
+    status && (
+      <div
+        className={`flex flex-col items-center gap-2 transition-opacity duration-300 ${
+          visible ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <Loader size={60} />
+        <h1 className="text-2xl">{status}</h1>
+      </div>
+    )
   );
 };

@@ -1,10 +1,16 @@
-export const Loader = () => {
+interface LoaderProps {
+  size?: number; // Optional size prop that can be passed to customize the loader size
+}
+
+export const Loader = ({ size = 20 }: LoaderProps) => {
   return (
     <svg
-      className="animate-spin h-5 w-5 text-gray-600"
+      className="animate-spin text-gray-600"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
+      width={size} // Dynamic width
+      height={size} // Dynamic height
     >
       <circle
         className="opacity-25"
