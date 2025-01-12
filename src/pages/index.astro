@@ -2,15 +2,32 @@
 import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
 import { PrismaClient } from "@prisma/client";
+
 const prisma = new PrismaClient();
 
-await prisma.post.create({
-	data: {
-		content: "Hello Astro, Vercel and Prisma",
-	},
-});
+// await prisma.post.create({
+// 	data: {
+// 		content: "Hello Astro, Vercel and Prisma",
+// 	},
+// });
 ---
 
 <Layout>
 	<Welcome />
 </Layout>
+
+<style>
+	@tailwind base;
+	@tailwind components;
+	@tailwind utilities;
+
+	@layer base {
+		@font-face {
+			font-family: 'Gotham';
+			font-style: normal;
+			font-weight: 400;
+			font-display: swap;
+			src: url(fonts/GothamMedium.ttf) format('woff2');
+		}
+	}
+</style>
