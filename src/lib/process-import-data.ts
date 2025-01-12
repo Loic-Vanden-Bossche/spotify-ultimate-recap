@@ -1,6 +1,7 @@
 import { waitOneSecond } from "./time-utils.ts";
 import { PrismaClient } from "@prisma/client";
-import type { JSONFile, SpotifyTrackJSON } from "./zip-utils.ts";
+import type { JSONFile } from "../models/json-file.ts";
+import type { SpotifyTrackJSON } from "../models/spotify-track-json.ts";
 
 export const processImportData = async (
   userUUID: string,

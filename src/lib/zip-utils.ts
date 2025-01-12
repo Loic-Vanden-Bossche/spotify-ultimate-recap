@@ -1,29 +1,5 @@
 import AdmZip from "adm-zip";
-
-export interface SpotifyTrackJSON {
-  ts: string;
-  platform: string;
-  ms_played: number;
-  conn_country: string;
-  ip_addr: string;
-  master_metadata_track_name: string;
-  master_metadata_album_artist_name: string;
-  master_metadata_album_album_name: string;
-  spotify_track_uri: string;
-  reason_start: string;
-  reason_end: string;
-  shuffle: boolean;
-  skipped: boolean;
-  offline: boolean;
-  offline_timestamp: string | null;
-  incognito_mode: boolean;
-  fileName?: string;
-}
-
-export interface JSONFile {
-  filename: string;
-  content: SpotifyTrackJSON[];
-}
+import type { JSONFile } from "../models/json-file.ts";
 
 export const isZipFile = (buffer: Buffer) => {
   return (
@@ -34,9 +10,7 @@ export const isZipFile = (buffer: Buffer) => {
   );
 };
 
-export const extractJsonFromZip = (
-  zipBuffer: Buffer,
-): Record<string, any>[] => {
+export const extractJsonFromZip = (zipBuffer: Buffer): JSONFile[] => {
   const zip = new AdmZip(zipBuffer);
   const jsonFiles: JSONFile[] = [];
 

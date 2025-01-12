@@ -1,6 +1,7 @@
 ---
 import Header from "./Header.astro";
 import { UploadStatus } from "./UploadStatus";
+import Charts from "./Charts.astro";
 ---
 
 <Header />
@@ -8,4 +9,5 @@ import { UploadStatus } from "./UploadStatus";
   <section class="absolute inset-0 flex flex-col items-center justify-center">
     <UploadStatus client:load />
   </section>
+  <Charts />
 </main>
