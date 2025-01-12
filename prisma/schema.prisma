@@ -7,7 +7,39 @@ datasource db {
   url      = env("POSTGRES_PRISMA_URL")
 }
 
-model Post {
-  id      String @id() @default(uuid())
-  content String
+model User {
+  id        String           @unique
+  username  String
+  histories SpotifyHistory[]
+}
+
+model SpotifyHistory {
+  id            String         @id() @default(uuid())
+  userId        String
+  zipFileName   String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spotifyTracks SpotifyTrack[]
+}
+
+model SpotifyTrack {
+  id                 String         @id() @default(uuid())
+  history            SpotifyHistory @relation(fields: [historyId], references: [id], onDelete: Cascade)
+  historyId          String
+  time               DateTime
+  platform           String
+  msPlayed           Int
+  connCountry        String
+  ipAddr             String
+  trackName          String?
+  artistName         String?
+  albumName          String?
+  trackUri           String?
+  reasonStart        String
+  reasonEnd          String
+  shuffle            Boolean
+  skipped            Boolean
+  offline            Boolean
+  offlineTimestamp   DateTime?
+  incognitoMode      Boolean
+  jsonSourceFileName String
 }

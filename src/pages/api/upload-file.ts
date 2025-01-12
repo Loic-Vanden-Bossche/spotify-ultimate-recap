@@ -3,6 +3,7 @@ import { processMultiPartFile } from "../../lib/multi-part.ts";
 import { processImportData } from "../../lib/process-import-data.ts";
 import { encodeMessage } from "../../lib/message-utils.ts";
 import { extractJsonFromZip, isZipFile } from "../../lib/zip-utils.ts";
+import { waitOneSecond } from "../../lib/time-utils.ts";
 
 export const prerender = false;
 
@@ -43,6 +44,8 @@ export const POST: APIRoute = async ({ request }) => {
           ),
         );
 
+        await waitOneSecond();
+
         if (!isZipFile(fileContent)) {
           throw new Error("Uploaded file is not a ZIP archive");
         }
@@ -53,7 +56,7 @@ export const POST: APIRoute = async ({ request }) => {
           throw new Error("No JSON files found in the ZIP archive");
         }
 
-        await processImportData(jsonFiles, (status) => {
+        await processImportData(userUUID, fileName, jsonFiles, (status) => {
           controller.enqueue(
             encoder.encode(
               encodeMessage("progress", {
@@ -71,6 +74,7 @@ export const POST: APIRoute = async ({ request }) => {
           ),
         );
       } catch (err) {
+        console.error(err);
         controller.enqueue(
           encoder.encode(
             encodeMessage("error", {
