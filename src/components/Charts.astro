@@ -1,7 +1,15 @@
 ---
-import { HourlyChart } from "./HourlyChart";
+import { HourlyChart } from "./charts/HourlyChart";
+import { ArtistsChart } from "./charts/ArtistsChart";
+import ChartContainer from "./ChartContainer.astro";
 ---
 
-<div>
-  <HourlyChart client:load />
+<div class="p-10 flex flex-col gap-10">
+  <ChartContainer title="Distribution des heures d'écoute dans une journée">
+    <HourlyChart client:load />
+  </ChartContainer>
+
+  <ChartContainer title="Top 15 des artistes écoutés">
+    <ArtistsChart client:load />
+  </ChartContainer>
 </div>

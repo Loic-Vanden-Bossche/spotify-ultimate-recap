@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { HourlyData } from "../models/hourly-data.ts";
-import { ReactECharts, type ReactEChartsProps } from "./ReactECharts.tsx";
+import { ReactECharts, type ReactEChartsProps } from "../ReactECharts.tsx";
+import type { HourlyData } from "../../models/hourly-data.ts";
 
 export const HourlyChart = () => {
   const [option, setOption] = useState<ReactEChartsProps["option"]>();
@@ -16,11 +16,10 @@ export const HourlyChart = () => {
       const xDomain = data.map((hourlyData) => hourlyData.hourOfDay + "h");
       const yDomain = data.map((hourlyData) => hourlyData.totalMinutes);
 
+      const baseHue = 142;
+
       setOption({
         backgroundColor: "transparent",
-        title: {
-          text: "Distribution des minutes écoutées par heure de la journée",
-        },
         toolbox: {
           show: true,
           feature: {
@@ -28,6 +27,12 @@ export const HourlyChart = () => {
               show: true,
             },
           },
+        },
+        grid: {
+          top: 20,
+          bottom: 50,
+          left: 80,
+          right: 15,
         },
         tooltip: {
           trigger: "axis",
@@ -39,15 +44,27 @@ export const HourlyChart = () => {
           name: "Heure de la journée",
           type: "category",
           data: xDomain,
+          nameLocation: "middle",
+          nameGap: 30,
         },
         yAxis: {
           type: "value",
           name: "Minutes totales écoutées",
+          nameLocation: "middle",
+          nameGap: 60,
         },
         series: [
           {
-            data: yDomain,
             type: "bar",
+            data: yDomain.map((value) => {
+              const lightness = 30 + (value / Math.max(...yDomain)) * 40;
+              return {
+                value: value,
+                itemStyle: {
+                  color: `hsl(${baseHue}, 70%, ${lightness}%)`,
+                },
+              };
+            }),
           },
         ],
       });
