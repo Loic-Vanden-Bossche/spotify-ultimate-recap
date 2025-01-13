@@ -1,6 +1,7 @@
 ---
 import { HourlyChart } from "./charts/HourlyChart";
 import { ArtistsChart } from "./charts/ArtistsChart";
+import { DailyChart } from "./charts/DailyChart";
 import ChartContainer from "./ChartContainer.astro";
 ---
 
@@ -11,5 +12,9 @@ import ChartContainer from "./ChartContainer.astro";
 
   <ChartContainer title="Top 15 des artistes écoutés">
     <ArtistsChart client:load />
+  </ChartContainer>
+
+  <ChartContainer title="Carte des écoutes par jour">
+    <DailyChart client:load />
   </ChartContainer>
 </div>
