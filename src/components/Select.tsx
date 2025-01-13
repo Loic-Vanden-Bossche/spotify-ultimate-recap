@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface Option {
   value: string;
@@ -10,7 +10,6 @@ interface AnimatedSelectProps {
   placeholder?: string;
   onChange: (value: string) => void;
 }
-
 export const Select: React.FC<AnimatedSelectProps> = ({
   options,
   placeholder = "Select an option",
@@ -18,6 +17,7 @@ export const Select: React.FC<AnimatedSelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<Option | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleOptionClick = (option: Option) => {
     setSelectedOption(option);
@@ -25,8 +25,24 @@ export const Select: React.FC<AnimatedSelectProps> = ({
     onChange(option.value);
   };
 
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target as Node)
+    ) {
+      setIsOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div className="relative w-64">
+    <div ref={dropdownRef} className="relative w-64">
       <div
         className="border border-gray-300 rounded-md bg-white shadow-sm px-4 py-2 cursor-pointer flex justify-between items-center hover:border-gray-400"
         onClick={() => setIsOpen((prev) => !prev)}
@@ -62,7 +78,7 @@ export const Select: React.FC<AnimatedSelectProps> = ({
                 selectedOption?.value === option.value
                   ? "bg-gray-200 font-semibold"
                   : ""
-              } `}
+              }`}
               onClick={() => handleOptionClick(option)}
             >
               {option.label}
