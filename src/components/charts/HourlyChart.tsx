@@ -6,7 +6,7 @@ export const HourlyChart = () => {
   const [option, setOption] = useState<ReactEChartsProps["option"]>();
 
   useEffect(() => {
-    const historyId = "31b7676c-3267-43cc-8969-e908b50d0fdc";
+    const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
 
     const fetchData = async () => {
       const data: HourlyData[] = await fetch(
@@ -73,5 +73,9 @@ export const HourlyChart = () => {
     fetchData();
   }, []);
 
-  return option && <ReactECharts option={option} theme="dark" />;
+  return (
+    <div className="h-[500px]">
+      {option && <ReactECharts option={option} theme="dark" />}
+    </div>
+  );
 };

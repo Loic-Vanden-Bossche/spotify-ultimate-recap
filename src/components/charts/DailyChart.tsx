@@ -8,7 +8,7 @@ export const DailyChart = () => {
   const [graphHeight, setGraphHeight] = useState<number>(0);
 
   useEffect(() => {
-    const historyId = "31b7676c-3267-43cc-8969-e908b50d0fdc";
+    const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
 
     const fetchData = async () => {
       const data: DailyData[] = await fetch(
@@ -97,12 +97,8 @@ export const DailyChart = () => {
   }, []);
 
   return (
-    option && (
-      <ReactECharts
-        option={option}
-        style={{ height: `${graphHeight}px` }}
-        theme="dark"
-      />
-    )
+    <div style={{ height: graphHeight + "px" }}>
+      {option && <ReactECharts option={option} theme="dark" />}
+    </div>
   );
 };
