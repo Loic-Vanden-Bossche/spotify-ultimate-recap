@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { ReactECharts, type ReactEChartsProps } from "../ReactECharts.tsx";
 import type { HourlyData } from "../../models/hourly-data.ts";
+import { AnimatedSwitcher } from "../AnimatedSwitcher.tsx";
+import { Loader } from "../Loader.tsx";
+import { AnimatedLoader } from "../AnimatedLoader.tsx";
 
 export const HourlyChart = () => {
-  const [option, setOption] = useState<ReactEChartsProps["option"]>();
+  const [option, setOption] = useState<ReactEChartsProps["option"] | null>(
+    null,
+  );
 
   useEffect(() => {
     const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
@@ -75,7 +80,9 @@ export const HourlyChart = () => {
 
   return (
     <div className="h-[500px]">
-      {option && <ReactECharts option={option} theme="dark" />}
+      <AnimatedLoader loading={option === null}>
+        {option && <ReactECharts option={option} theme="dark" />}
+      </AnimatedLoader>
     </div>
   );
 };

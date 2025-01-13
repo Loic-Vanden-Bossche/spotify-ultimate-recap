@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ReactECharts, type ReactEChartsProps } from "../ReactECharts.tsx";
 import type { ArtistsData } from "../../models/artists-data.ts";
+import { AnimatedLoader } from "../AnimatedLoader.tsx";
 
 export const ArtistsChart = () => {
   const [option, setOption] = useState<ReactEChartsProps["option"]>();
@@ -83,7 +84,9 @@ export const ArtistsChart = () => {
 
   return (
     <div className="h-[500px]">
-      {option && <ReactECharts option={option} theme="dark" />}
+      <AnimatedLoader loading={option === null}>
+        {option && <ReactECharts option={option} theme="dark" />}
+      </AnimatedLoader>
     </div>
   );
 };

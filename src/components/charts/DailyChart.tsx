@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ReactECharts, type ReactEChartsProps } from "../ReactECharts.tsx";
 import type { HourlyData } from "../../models/hourly-data.ts";
 import type { DailyData } from "../../models/daily-data.ts";
+import { AnimatedLoader } from "../AnimatedLoader.tsx";
 
 export const DailyChart = () => {
   const [option, setOption] = useState<ReactEChartsProps["option"]>();
@@ -98,7 +99,9 @@ export const DailyChart = () => {
 
   return (
     <div style={{ height: graphHeight + "px" }}>
-      {option && <ReactECharts option={option} theme="dark" />}
+      <AnimatedLoader loading={option === null}>
+        {option && <ReactECharts option={option} theme="dark" />}
+      </AnimatedLoader>
     </div>
   );
 };
