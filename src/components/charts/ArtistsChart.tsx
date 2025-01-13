@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { HourlyData } from "../../models/hourly-data.ts";
 import { ReactECharts, type ReactEChartsProps } from "../ReactECharts.tsx";
+import type { ArtistsData } from "../../models/artists-data.ts";
 
 export const ArtistsChart = () => {
   const [option, setOption] = useState<ReactEChartsProps["option"]>();
@@ -9,12 +9,12 @@ export const ArtistsChart = () => {
     const historyId = "31b7676c-3267-43cc-8969-e908b50d0fdc";
 
     const fetchData = async () => {
-      const data: HourlyData[] = await fetch(
-        `/api/charts/${historyId}/hourly`,
+      const data: ArtistsData[] = await fetch(
+        `/api/charts/${historyId}/artists`,
       ).then((res) => res.json());
 
-      const xDomain = data.map((hourlyData) => hourlyData.hourOfDay + "h");
-      const yDomain = data.map((hourlyData) => hourlyData.totalMinutes);
+      const xDomain = data.map((artistsData) => artistsData.totalMinutes);
+      const yDomain = data.map((artistsData) => artistsData.artistName);
 
       const baseHue = 142;
 
@@ -31,7 +31,7 @@ export const ArtistsChart = () => {
         grid: {
           top: 20,
           bottom: 50,
-          left: 80,
+          left: 110,
           right: 15,
         },
         tooltip: {
@@ -41,23 +41,31 @@ export const ArtistsChart = () => {
           },
         },
         xAxis: {
-          name: "Heure de la journée",
-          type: "category",
-          data: xDomain,
+          type: "value",
+          name: "Minutes totales écoutées",
           nameLocation: "middle",
           nameGap: 30,
         },
         yAxis: {
-          type: "value",
-          name: "Minutes totales écoutées",
+          type: "category",
+          name: "Artistes",
+          data: yDomain,
           nameLocation: "middle",
-          nameGap: 60,
+          nameGap: 90,
+          axisLabel: {
+            formatter: (label) => {
+              const maxLabelLength = 10; // Adjust as needed
+              return label.length > maxLabelLength
+                ? `${label.slice(0, maxLabelLength)}...`
+                : label;
+            },
+          },
         },
         series: [
           {
             type: "bar",
-            data: yDomain.map((value) => {
-              const lightness = 30 + (value / Math.max(...yDomain)) * 40;
+            data: xDomain.map((value) => {
+              const lightness = 30 + (value / Math.max(...xDomain)) * 40;
               return {
                 value: value,
                 itemStyle: {

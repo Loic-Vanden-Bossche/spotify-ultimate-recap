@@ -34,16 +34,22 @@ export const GET: APIRoute = async ({ params, request }) => {
 
   const result = await prisma.$queryRaw<HourlyData[]>(
     Prisma.sql`
-        SELECT EXTRACT(HOUR FROM time) AS "hourOfDay",
-               (CAST(SUM("msPlayed") / 60000 AS INTEGER)) AS "totalMinutes"
-        FROM "SpotifyTrack"
-        WHERE "historyId" = ${historyId}
-        GROUP BY EXTRACT(HOUR FROM time)
-        ORDER BY "hourOfDay"
+      SELECT
+        "artistName" AS "artistName",
+        (CAST(SUM("msPlayed") / 60000 AS INTEGER)) AS "totalMinutes"
+      FROM
+        "SpotifyTrack"
+      WHERE
+        "historyId" = ${historyId}
+      GROUP BY
+          "artistName"
+      ORDER BY
+        "totalMinutes" DESC
+      LIMIT 15
     `,
   );
 
-  return new Response(JSON.stringify(result), {
+  return new Response(JSON.stringify(result.reverse()), {
     headers: {
       "content-type": "application/json",
     },
