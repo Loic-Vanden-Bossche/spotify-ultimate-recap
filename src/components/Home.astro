@@ -5,7 +5,10 @@ import Charts from "./Charts.astro";
 ---
 
 <Header />
-<main class="h-full relative overflow-auto">
-  <Charts />
+<main class="h-full overflow-hidden relative">
+  <div class="h-full overflow-auto">
+    <Charts />
+  </div>
+
   <UploadStatus client:load />
 </main>
