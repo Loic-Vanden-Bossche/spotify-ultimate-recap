@@ -1,6 +1,7 @@
 import { ReactECharts, type ReactEChartsProps } from "../ReactECharts.tsx";
 import { DynamicChart } from "../DynamicChart.tsx";
 import * as echarts from "echarts";
+import { minutesToHumanReadable } from "../../lib/time-utils.ts";
 
 interface TreemapData {
   name: string;
@@ -24,21 +25,21 @@ export const TreemapChart = () => {
     const getLevelOption = () => [
       {
         itemStyle: {
-          borderWidth: 3, // Thicker borders for artist nodes
+          borderWidth: 3,
           gapWidth: 5,
           borderColor: "black",
         },
       },
       {
         itemStyle: {
-          borderWidth: 1, // Medium borders for album nodes
+          borderWidth: 1,
           gapWidth: 2,
           borderColor: "white",
         },
       },
       {
         itemStyle: {
-          borderWidth: 1, // Thin borders for track nodes
+          borderWidth: 1,
           gapWidth: 1,
           borderColor: "black",
         },
@@ -56,37 +57,56 @@ export const TreemapChart = () => {
         bottom: 50,
         left: 0,
         right: 0,
+        top: 0,
       },
       tooltip: {
+        backgroundColor: "black",
+        borderWidth: 2,
+        padding: 10,
+        borderRadius: 10,
+        textStyle: {
+          color: "white",
+        },
         formatter: (info: any) => {
           const value = info.value;
-          const treePathInfo = info.treePathInfo;
-          const title = treePathInfo.map((node: any) => node.name).join(" > ");
+          const treePathInfo: TreemapData[] = info.treePathInfo;
+
+          const tree = treePathInfo.filter((node) => !!node.name);
+
+          const title = tree
+            .map((node, i) => {
+              const displaySeparator = i === tree.length - 1 ? "" : " > ";
+              return `<span class="text-wrap"> ${formatUtil.encodeHTML(node.name)}&nbsp;${displaySeparator}&nbsp;</span>`;
+            })
+            .join("");
 
           return `
-            <div class="tooltip-title">
-              ${formatUtil.encodeHTML(title)}
-            </div>
+            <h1 class="flex flex-wrap max-w-80">
+               ${title}
+            </h1>
             
-            ${value} minutes
+            <div class="h-2"> </div>
+            <div class="flex flex-nowrap gap-2 items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                />
+              </svg>
+              <span class="font-bold"> ${minutesToHumanReadable(value)} </span>
+            </div>
           `;
         },
       },
       series: [
-        // {
-        //   type: "sunburst",
-        //   radius: ["20%", "90%"],
-        //   animationDurationUpdate: 1000,
-        //   data: top15Artists,
-        //   universalTransition: true,
-        //   itemStyle: {
-        //     borderWidth: 1,
-        //     borderColor: "rgba(255,255,255,.5)",
-        //   },
-        //   label: {
-        //     show: false,
-        //   },
-        // },
         {
           type: "treemap",
           visibleMin: avgArtistPlaytime,
