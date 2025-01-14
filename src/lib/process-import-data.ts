@@ -83,8 +83,6 @@ export const processImportData = async (
       const duration = endTime.getTime() - startTime.getTime();
 
       progress(`Importation terminée en ${duration / 1000} secondes`);
-
-      await waitOneSecond();
     },
     {
       timeout: 10 * 60 * 1000,

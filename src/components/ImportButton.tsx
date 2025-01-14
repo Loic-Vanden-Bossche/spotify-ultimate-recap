@@ -7,6 +7,7 @@ import {
 } from "react";
 import eventBus from "../utils/eventBus.ts";
 import { Loader } from "./Loader";
+import { UploadIcon } from "./icons/UploadIcon.tsx";
 
 export const ImportButton = () => {
   const hiddenFileInput = useRef<HTMLInputElement | null>(null);
@@ -119,7 +120,7 @@ export const ImportButton = () => {
   return (
     <>
       <button
-        className={`bg-black text-white px-4 py-2 rounded-md flex items-center justify-center transition-all duration-300 ease-in-out disabled:opacity-80`}
+        className={`bg-black text-white px-4 py-2 rounded-md flex items-center justify-center transition-all duration-300 ease-in-out disabled:opacity-80 hover:scale-95 hover:opacity-95`}
         onClick={handleClick}
         disabled={loading}
       >
@@ -130,6 +131,8 @@ export const ImportButton = () => {
         >
           {loading && <Loader />}
         </span>
+        <UploadIcon />
+        <div className="w-3" />
         <p>Import Spotify Data</p>
       </button>
       <input

@@ -5,13 +5,13 @@ import { Loader } from "./Loader.tsx";
 export const UploadStatus = () => {
   const [status, setStatus] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false); // State to control animation
 
   useEffect(() => {
-    const onStart = (data: { fileName: string }) => {
-      setFileName(data.fileName);
+    const onStart = () => {
       setIsError(false);
+      setLoading(true);
       setStatus("Envoi du fichier en cours...");
     };
 
@@ -20,13 +20,23 @@ export const UploadStatus = () => {
     };
 
     const onComplete = () => {
-      setVisible(false); // Trigger exit animation
-      setTimeout(() => setStatus(null), 300); // Wait for animation to finish before removing
+      setLoading(false);
+
+      setTimeout(() => {
+        setVisible(false);
+        setTimeout(() => setStatus(null), 300);
+      }, 2000);
     };
 
     const onError = (data: { message: string }) => {
       setIsError(true);
+      setLoading(false);
       setStatus(`Erreur: ${data.message}`);
+
+      setTimeout(() => {
+        setVisible(false);
+        setTimeout(() => setStatus(null), 300);
+      }, 2000);
     };
 
     eventBus.on("upload:start", onStart);
@@ -50,16 +60,24 @@ export const UploadStatus = () => {
 
   return (
     status && (
-      <div
-        className={`flex flex-col items-center gap-2 transition-opacity duration-300 ${
-          visible ? "opacity-100" : "opacity-0"
+      <section
+        className={`absolute inset-0 flex flex-col items-center justify-center bg-black transition-all duration-300 ${
+          visible ? "bg-opacity-90" : "bg-opacity-0"
         }`}
       >
-        {!isError && <Loader size={60} />}
-        <h1 className={`text-2xl ${isError ? "text-red-500" : "text-white"}`}>
-          {status}
-        </h1>
-      </div>
+        <div
+          className={`flex flex-col items-center gap-2 transition-opacity duration-300 ${
+            visible ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          {loading && <Loader size={80} />}
+          <h1
+            className={`text-2xl mt-7 ${isError ? "text-red-500" : "text-white"}`}
+          >
+            {status}
+          </h1>
+        </div>
+      </section>
     )
   );
 };

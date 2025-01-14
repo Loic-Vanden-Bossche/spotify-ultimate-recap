@@ -47,13 +47,13 @@ export const POST: APIRoute = async ({ request }) => {
         await waitOneSecond();
 
         if (!isZipFile(fileContent)) {
-          throw new Error("Uploaded file is not a ZIP archive");
+          throw new Error("Le fichier envoyé n'est pas une archive ZIP");
         }
 
         const jsonFiles = extractJsonFromZip(fileContent);
 
         if (jsonFiles.length === 0) {
-          throw new Error("No JSON files found in the ZIP archive");
+          throw new Error("Aucun fichier JSON trouvé dans l'archive ZIP");
         }
 
         await processImportData(userUUID, fileName, jsonFiles, (status) => {
@@ -69,7 +69,7 @@ export const POST: APIRoute = async ({ request }) => {
         controller.enqueue(
           encoder.encode(
             encodeMessage("complete", {
-              status: "File processing completed successfully!",
+              status: "Importation terminée",
             }),
           ),
         );
