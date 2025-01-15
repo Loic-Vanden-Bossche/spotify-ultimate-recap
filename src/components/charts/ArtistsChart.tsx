@@ -1,6 +1,7 @@
 import { ReactECharts, type ReactEChartsProps } from "../ReactECharts.tsx";
 import type { ArtistsData } from "../../models/artists-data.ts";
 import { DynamicChart } from "../DynamicChart.tsx";
+import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 
 export const ArtistsChart = () => {
   const renderChart = (data: ArtistsData[]) => {
@@ -71,7 +72,7 @@ export const ArtistsChart = () => {
     return <ReactECharts option={option} theme="dark" />;
   };
 
-  const fetchData = async () => {
+  const fetchData = async (settings: ChartsSettingsData) => {
     const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
 
     const data: ArtistsData[] = await fetch(

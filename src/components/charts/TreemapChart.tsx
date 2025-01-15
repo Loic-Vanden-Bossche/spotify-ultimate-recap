@@ -2,6 +2,7 @@ import { ReactECharts, type ReactEChartsProps } from "../ReactECharts.tsx";
 import { DynamicChart } from "../DynamicChart.tsx";
 import * as echarts from "echarts";
 import { minutesToHumanReadable } from "../../lib/time-utils.ts";
+import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 
 interface TreemapData {
   name: string;
@@ -10,7 +11,7 @@ interface TreemapData {
 }
 
 export const TreemapChart = () => {
-  const fetchData = async () => {
+  const fetchData = async (settings: ChartsSettingsData) => {
     const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
     const data: TreemapData[] = await fetch(
       `/api/charts/${historyId}/track-tree`,

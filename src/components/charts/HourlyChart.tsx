@@ -2,9 +2,10 @@ import { ReactECharts, type ReactEChartsProps } from "../ReactECharts.tsx";
 import type { HourlyData } from "../../models/hourly-data.ts";
 
 import { DynamicChart } from "../DynamicChart.tsx";
+import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 
 export const HourlyChart = () => {
-  const fetchData = async () => {
+  const fetchData = async (settings: ChartsSettingsData) => {
     const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
     const data: HourlyData[] = await fetch(
       `/api/charts/${historyId}/hourly`,

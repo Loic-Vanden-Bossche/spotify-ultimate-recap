@@ -1,10 +1,12 @@
 import React, { type JSX, useEffect, useRef, useState } from "react";
 import { Loader } from "./Loader.tsx";
 import { AnimatedSwitcher } from "./AnimatedSwitcher.tsx";
+import { useSettingsStore } from "./store/settings.store.ts";
+import type { ChartsSettingsData } from "./ChartsSettings.tsx";
 
 interface DynamicChartProps<T> {
   renderChart: (data: T) => JSX.Element;
-  fetchData: () => Promise<T>;
+  fetchData: (settings: ChartsSettingsData) => Promise<T>;
 }
 
 export const DynamicChart = <T extends unknown>({
@@ -15,6 +17,26 @@ export const DynamicChart = <T extends unknown>({
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [data, setData] = useState<T | null>(null);
   const chartRef = useRef(null);
+
+  const settings = useSettingsStore((state) => state.settings);
+
+  const fetchChartData = async (settings: ChartsSettingsData) => {
+    const fetchedData = await fetchData(settings);
+    setData(fetchedData);
+    setIsDataLoaded(true);
+  };
+
+  useEffect(() => {
+    if (!settings) {
+      return;
+    }
+
+    if (isVisible) {
+      fetchChartData(settings);
+    } else {
+      setIsDataLoaded(false);
+    }
+  }, [settings]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -34,13 +56,10 @@ export const DynamicChart = <T extends unknown>({
   }, []);
 
   useEffect(() => {
-    if (isVisible && !isDataLoaded) {
-      fetchData().then((fetchedData) => {
-        setData(fetchedData);
-        setIsDataLoaded(true);
-      });
+    if (isVisible && !isDataLoaded && settings) {
+      fetchChartData(settings);
     }
-  }, [isVisible, isDataLoaded, fetchData]);
+  }, [isVisible, isDataLoaded, fetchData, settings]);
 
   return (
     <div ref={chartRef} className={"h-full"}>

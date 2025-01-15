@@ -6,11 +6,14 @@ interface Option {
 }
 
 interface AnimatedSelectProps {
+  defaultValue?: string;
   options: Option[];
   placeholder?: string;
   onChange: (value: string) => void;
 }
+
 export const Select: React.FC<AnimatedSelectProps> = ({
+  defaultValue,
   options,
   placeholder = "Select an option",
   onChange,
@@ -40,6 +43,15 @@ export const Select: React.FC<AnimatedSelectProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    if (defaultValue) {
+      const defaultOption = options.find(
+        (option) => option.value === defaultValue,
+      );
+      setSelectedOption(defaultOption || null);
+    }
+  }, [defaultValue]);
 
   return (
     <div ref={dropdownRef} className="relative w-64">

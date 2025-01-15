@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ReactECharts, type ReactEChartsProps } from "../ReactECharts.tsx";
-import type { HourlyData } from "../../models/hourly-data.ts";
 import type { DailyData } from "../../models/daily-data.ts";
-import { AnimatedLoader } from "../AnimatedLoader.tsx";
 import { DynamicChart } from "../DynamicChart.tsx";
+import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 
 export const DailyChart = () => {
   const [graphHeight, setGraphHeight] = useState<number>(0);
 
-  const fetchData = async () => {
+  const fetchData = async (settings: ChartsSettingsData) => {
     const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
 
     const data: DailyData[] = await fetch(

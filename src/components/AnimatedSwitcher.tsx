@@ -23,7 +23,7 @@ export const AnimatedSwitcher: React.FC<AnimatedSwitcherProps> = ({
     }, 300);
 
     return () => clearTimeout(timeout);
-  }, [isFirstActive, first, second]);
+  }, [isFirstActive]);
 
   return (
     <div

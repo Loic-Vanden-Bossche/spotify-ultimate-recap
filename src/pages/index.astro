@@ -1,25 +1,22 @@
 ---
-import Welcome from "../components/Home.astro";
+import Home from "../components/Home.astro";
 import Layout from "../layouts/Layout.astro";
 import { v4 as uuid } from "uuid";
+import { extractUuid } from "../lib/extract-uuid";
 
 export const prerender = false;
 
-const cookies = Astro.request.headers.get("cookie");
-const uuidCookie = cookies && cookies.includes("uuid");
+const cookieUUID = extractUuid(Astro.request);
 
-let userUUID;
+const userUUID = cookieUUID ?? uuid();
 
-if (!uuidCookie) {
-  userUUID = uuid();
+if (!cookieUUID) {
   Astro.response.headers.set("Set-Cookie", `uuid=${userUUID}`);
-} else {
-  userUUID = cookies.split("uuid=")[1].split(";")[0];
 }
 ---
 
 <Layout>
-  <Welcome />
+  <Home uuid={userUUID} />
 </Layout>
 
 <style is:global>
