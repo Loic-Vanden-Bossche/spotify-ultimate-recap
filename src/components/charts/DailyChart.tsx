@@ -17,7 +17,7 @@ export const DailyChart = () => {
     return data;
   };
 
-  const renderChart = (data: DailyData[]) => {
+  const getChartOptions = (data: DailyData[]): ReactEChartsProps["option"] => {
     const sizePerYear = 180;
     const years: string[] = [];
 
@@ -42,7 +42,7 @@ export const DailyChart = () => {
     const maxLightness = 30 + 40;
     const minLightness = 30;
 
-    const option: ReactEChartsProps["option"] = {
+    return {
       backgroundColor: "transparent",
       toolbox: {
         show: true,
@@ -94,13 +94,11 @@ export const DailyChart = () => {
         };
       }),
     };
-
-    return <ReactECharts option={option} theme="dark" />;
   };
 
   return (
     <div style={{ height: graphHeight + "px" }}>
-      <DynamicChart fetchData={fetchData} renderChart={renderChart} />
+      <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
     </div>
   );
 };

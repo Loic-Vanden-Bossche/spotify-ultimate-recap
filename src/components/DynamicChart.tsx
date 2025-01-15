@@ -1,28 +1,32 @@
-import React, { type JSX, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Loader } from "./Loader.tsx";
 import { AnimatedSwitcher } from "./AnimatedSwitcher.tsx";
 import { useSettingsStore } from "./store/settings.store.ts";
 import type { ChartsSettingsData } from "./ChartsSettings.tsx";
+import { ReactECharts, type ReactEChartsProps } from "./ReactECharts.tsx";
 
 interface DynamicChartProps<T> {
-  renderChart: (data: T) => JSX.Element;
+  getChartOptions: (data: T) => ReactEChartsProps["option"];
   fetchData: (settings: ChartsSettingsData) => Promise<T>;
 }
 
 export const DynamicChart = <T extends unknown>({
-  renderChart,
+  getChartOptions,
   fetchData,
 }: DynamicChartProps<T>) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const [data, setData] = useState<T | null>(null);
+  const [option, setOption] = useState<ReactEChartsProps["option"] | null>(
+    null,
+  );
   const chartRef = useRef(null);
 
   const settings = useSettingsStore((state) => state.settings);
 
   const fetchChartData = async (settings: ChartsSettingsData) => {
     const fetchedData = await fetchData(settings);
-    setData(fetchedData);
+
+    setOption(getChartOptions(fetchedData));
     setIsDataLoaded(true);
   };
 
@@ -69,7 +73,7 @@ export const DynamicChart = <T extends unknown>({
             <Loader size={60} />
           </div>
         }
-        second={data && isVisible && renderChart(data)}
+        second={option && <ReactECharts option={option} theme="dark" />}
         isFirstActive={!isVisible || !isDataLoaded}
       />
     </div>

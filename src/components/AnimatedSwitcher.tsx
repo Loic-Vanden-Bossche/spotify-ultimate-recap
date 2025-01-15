@@ -1,35 +1,24 @@
-import React, { useState, useEffect } from "react";
+import { type FC, type ReactNode } from "react";
 
 interface AnimatedSwitcherProps {
-  first: React.ReactNode;
-  second: React.ReactNode;
+  first: ReactNode;
+  second: ReactNode;
   isFirstActive: boolean;
 }
 
-export const AnimatedSwitcher: React.FC<AnimatedSwitcherProps> = ({
+export const AnimatedSwitcher: FC<AnimatedSwitcherProps> = ({
   first,
   second,
   isFirstActive,
 }) => {
-  const [currentChild, setCurrentChild] = useState<React.ReactNode>(first);
-  const [isVisible, setIsVisible] = useState(true);
-
-  useEffect(() => {
-    setIsVisible(false);
-
-    const timeout = setTimeout(() => {
-      setCurrentChild(isFirstActive ? first : second);
-      setIsVisible(true);
-    }, 300);
-
-    return () => clearTimeout(timeout);
-  }, [isFirstActive]);
-
   return (
-    <div
-      className={`transition-opacity duration-300 h-full ${isVisible ? "opacity-100" : "opacity-0"}`}
-    >
-      {currentChild}
+    <div className={"h-full relative "}>
+      {second}
+      <div
+        className={`absolute pointer-events-none top-0 transition-opacity [transition-timing-function:cubic-bezier(0.32,0,0.67,0)] duration-300 h-full w-full bg-black ${isFirstActive ? "opacity-100" : "opacity-0"}`}
+      >
+        {first}
+      </div>
     </div>
   );
 };

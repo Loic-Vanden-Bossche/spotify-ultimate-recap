@@ -1,4 +1,4 @@
-import { ReactECharts, type ReactEChartsProps } from "../ReactECharts.tsx";
+import { type ReactEChartsProps } from "../ReactECharts.tsx";
 import type { HourlyData } from "../../models/hourly-data.ts";
 
 import { DynamicChart } from "../DynamicChart.tsx";
@@ -14,13 +14,13 @@ export const HourlyChart = () => {
     return data;
   };
 
-  const renderChart = (data: HourlyData[]) => {
+  const getChartOptions = (data: HourlyData[]): ReactEChartsProps["option"] => {
     const xDomain = data.map((hourlyData) => hourlyData.hourOfDay + "h");
     const yDomain = data.map((hourlyData) => hourlyData.totalMinutes);
 
     const baseHue = 142;
 
-    const option: ReactEChartsProps["option"] = {
+    return {
       backgroundColor: "transparent",
       toolbox: {
         show: true,
@@ -70,13 +70,11 @@ export const HourlyChart = () => {
         },
       ],
     };
-
-    return <ReactECharts option={option} theme="dark" />;
   };
 
   return (
     <div className={"h-[500px]"}>
-      <DynamicChart fetchData={fetchData} renderChart={renderChart} />
+      <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
     </div>
   );
 };

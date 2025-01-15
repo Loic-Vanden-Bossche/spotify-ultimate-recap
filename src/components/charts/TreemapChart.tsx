@@ -20,7 +20,9 @@ export const TreemapChart = () => {
     return data;
   };
 
-  const renderChart = (data: TreemapData[]) => {
+  const getChartOptions = (
+    data: TreemapData[],
+  ): ReactEChartsProps["option"] => {
     const formatUtil = echarts.format;
 
     const getLevelOption = () => [
@@ -52,7 +54,7 @@ export const TreemapChart = () => {
       top15Artists.reduce((acc, artist) => acc + artist.value, 0) /
       top15Artists.length;
 
-    const option: ReactEChartsProps["option"] = {
+    return {
       backgroundColor: "transparent",
       grid: {
         bottom: 50,
@@ -123,13 +125,11 @@ export const TreemapChart = () => {
         },
       ],
     };
-
-    return <ReactECharts option={option} theme="dark" />;
   };
 
   return (
     <div className={"h-[80vh]"}>
-      <DynamicChart fetchData={fetchData} renderChart={renderChart} />
+      <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
     </div>
   );
 };

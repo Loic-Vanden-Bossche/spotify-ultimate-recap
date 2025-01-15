@@ -1,16 +1,28 @@
-import { ReactECharts, type ReactEChartsProps } from "../ReactECharts.tsx";
+import { type ReactEChartsProps } from "../ReactECharts.tsx";
 import type { ArtistsData } from "../../models/artists-data.ts";
 import { DynamicChart } from "../DynamicChart.tsx";
 import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 
 export const ArtistsChart = () => {
-  const renderChart = (data: ArtistsData[]) => {
+  const fetchData = async (settings: ChartsSettingsData) => {
+    const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
+
+    const data: ArtistsData[] = await fetch(
+      `/api/charts/${historyId}/artists`,
+    ).then((res) => res.json());
+
+    return data;
+  };
+
+  const getChartOptions = (
+    data: ArtistsData[],
+  ): ReactEChartsProps["option"] => {
     const xDomain = data.map((artistsData) => artistsData.totalMinutes);
     const yDomain = data.map((artistsData) => artistsData.artistName);
 
     const baseHue = 142;
 
-    const option: ReactEChartsProps["option"] = {
+    return {
       backgroundColor: "transparent",
       toolbox: {
         show: true,
@@ -68,23 +80,11 @@ export const ArtistsChart = () => {
         },
       ],
     };
-
-    return <ReactECharts option={option} theme="dark" />;
-  };
-
-  const fetchData = async (settings: ChartsSettingsData) => {
-    const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
-
-    const data: ArtistsData[] = await fetch(
-      `/api/charts/${historyId}/artists`,
-    ).then((res) => res.json());
-
-    return data;
   };
 
   return (
     <div className={"h-[500px]"}>
-      <DynamicChart fetchData={fetchData} renderChart={renderChart} />
+      <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
     </div>
   );
 };
