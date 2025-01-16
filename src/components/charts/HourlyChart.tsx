@@ -8,7 +8,7 @@ import type { ReportResponse } from "../../models/report-response.ts";
 export const HourlyChart = () => {
   const fetchData = async (settings: ChartsSettingsData) => {
     const response: ReportResponse<HourlyData[]> = await fetch(
-      `/api/charts/079b09db-9142-4331-a8e0-3335960749b1;017562ec-65fa-455d-bf10-cea07878cebb/2018;2019/hourly?combined=${settings.isCombined}`,
+      `/api/charts/${settings.historyIds.join(";")}/${settings.years.join(";")}/hourly?combined=${settings.isCombined}`,
     ).then((res) => res.json());
 
     return response;

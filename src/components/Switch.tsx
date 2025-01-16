@@ -1,0 +1,34 @@
+import React from "react";
+
+interface SwitchProps {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label: string;
+}
+
+export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label }) => {
+  const handleToggle = () => {
+    onChange(!checked);
+  };
+
+  return (
+    <div
+      className="flex items-center cursor-pointer select-none"
+      onClick={handleToggle}
+    >
+      <div
+        className={`relative w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ${
+          checked ? "bg-blue-500" : "bg-gray-300"
+        }`}
+      >
+        <div
+          className={`absolute left-1 w-4 h-4 bg-white rounded-full shadow transform transition-transform duration-300 ${
+            checked ? "translate-x-6" : "translate-x-0"
+          }`}
+        />
+      </div>
+
+      <span className="ml-3 text-white text-nowrap">{label}</span>
+    </div>
+  );
+};
