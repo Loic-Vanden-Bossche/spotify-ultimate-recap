@@ -11,7 +11,10 @@ const cookieUUID = extractUuid(Astro.request);
 const userUUID = cookieUUID ?? uuid();
 
 if (!cookieUUID) {
-  Astro.response.headers.set("Set-Cookie", `uuid=${userUUID}`);
+  Astro.response.headers.set(
+    "Set-Cookie",
+    `uuid=${userUUID}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=31536000`,
+  );
 }
 ---
 

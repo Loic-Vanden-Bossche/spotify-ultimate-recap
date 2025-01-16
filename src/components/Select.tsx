@@ -79,10 +79,20 @@ export const Select: React.FC<AnimatedSelectProps> = ({
       </div>
 
       <div
-        className={`absolute mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg z-10 overflow-hidden transition-all duration-300 ease-in-out transform ${isOpen ? "max-h-60 opacity-100 scale-100" : "max-h-0 opacity-0 scale-95"}`}
-        style={{ transitionProperty: "max-height, opacity, transform" }}
+        className={`absolute mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg z-10 overflow-hidden transition-all duration-300 ease-in-out transform ${
+          isOpen
+            ? "max-h-60 opacity-100 scale-100"
+            : "max-h-0 opacity-0 scale-95"
+        }`}
+        style={{
+          transitionProperty: "max-height, opacity, transform",
+        }}
       >
-        <ul className="max-h-60">
+        <ul
+          className={`overflow-auto transition-all duration-300 ease-in-out ${
+            isOpen ? "max-h-60" : "max-h-0"
+          }`}
+        >
           {options.map((option) => (
             <li
               key={option.value}

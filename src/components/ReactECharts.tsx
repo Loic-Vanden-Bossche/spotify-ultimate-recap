@@ -45,9 +45,29 @@ export function ReactECharts({
   useEffect(() => {
     if (chartRef.current !== null) {
       const chart = getInstanceByDom(chartRef.current);
-      chart?.setOption(option, settings);
+      const prevOption = (chart?.getOption() || null) as EChartsOption | null;
+
+      chart?.setOption(option, {
+        notMerge: compareOptionMerge(prevOption, option),
+      });
     }
   }, [option, settings, theme]);
+
+  const compareOptionMerge = (
+    prevOption: EChartsOption | null,
+    option: EChartsOption | null,
+  ): boolean => {
+    const prevSeries = prevOption?.series || [];
+    const series = option?.series || [];
+
+    if (Array.isArray(series) && Array.isArray(prevSeries)) {
+      if (series.length < prevSeries.length) {
+        return true;
+      }
+    }
+
+    return false;
+  };
 
   useEffect(() => {
     if (chartRef.current !== null) {

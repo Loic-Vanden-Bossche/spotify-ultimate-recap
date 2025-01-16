@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
 import { Prisma, PrismaClient } from "@prisma/client";
-import type { HourlyData } from "../../../../models/hourly-data.ts";
 
 export const prerender = false;
 
@@ -24,7 +23,6 @@ export const GET: APIRoute = async ({ params, request }) => {
   const history = await prisma.spotifyHistory.findUnique({
     where: {
       id: historyId,
-      userId: userUUID,
     },
   });
 
@@ -32,15 +30,24 @@ export const GET: APIRoute = async ({ params, request }) => {
     throw new Error("History not found");
   }
 
-  const result = await prisma.$queryRaw<HourlyData[]>(
+  const result = await prisma.$queryRaw<
+    { year: number; totalDays: number; totalYearDays: number }[]
+  >(
     Prisma.sql`
-        SELECT EXTRACT(HOUR FROM time) AS "hourOfDay",
-               (CAST(SUM("msPlayed") / 60000 AS INTEGER)) AS "totalMinutes"
-        FROM "SpotifyTrack"
-        WHERE "historyId" = ${historyId}
-        GROUP BY EXTRACT(HOUR FROM time)
-        ORDER BY "hourOfDay"
-    `,
+    SELECT 
+        EXTRACT(YEAR FROM time) AS year,
+        CAST(COUNT(DISTINCT DATE(time)) AS INTEGER) AS "totalDays",
+        CASE
+            WHEN MOD(EXTRACT(YEAR FROM time), 4) = 0
+                AND (MOD(EXTRACT(YEAR FROM time), 100) != 0 OR MOD(EXTRACT(YEAR FROM time), 400) = 0)
+                THEN 366
+            ELSE 365
+            END AS "totalYearDays"
+    FROM "SpotifyTrack"
+    WHERE "historyId" = ${history.id}
+    GROUP BY EXTRACT(YEAR FROM time)
+    ORDER BY year
+  `,
   );
 
   return new Response(JSON.stringify(result), {

@@ -63,7 +63,7 @@ export const DynamicChart = <T extends unknown>({
     if (isVisible && !isDataLoaded && settings) {
       fetchChartData(settings);
     }
-  }, [isVisible, isDataLoaded, fetchData, settings]);
+  }, [isVisible, isDataLoaded, fetchData]);
 
   return (
     <div ref={chartRef} className={"h-full"}>

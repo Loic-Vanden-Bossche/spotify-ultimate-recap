@@ -1,38 +1,15 @@
 ---
 import Header from "./Header.astro";
 import { UploadStatus } from "./UploadStatus";
-import { Charts } from "./Charts";
-import { PrismaClient } from "@prisma/client";
-import { extractUuid } from "../lib/extract-uuid";
+import Charts from "./Charts.astro";
 
-const uuid = extractUuid(Astro.request);
-
-if (!uuid) {
-  // trow error
-
-  return;
-}
-
-const prisma = new PrismaClient();
-
-// const years = prisma.spotifyTrack.aggregate({
-//   where: {
-//     history: {
-//       user: {
-//         id: uuid,
-//       }
-//     },
-//   },
-//   _sum: {
-//
-//   },
-// });
+const uuid = Astro.props.uuid;
 ---
 
 <Header />
 <main class="h-full overflow-hidden relative">
   <div class="h-full overflow-auto">
-    <Charts client:load />
+    <Charts uuid={uuid} />
   </div>
 
   <UploadStatus client:load />

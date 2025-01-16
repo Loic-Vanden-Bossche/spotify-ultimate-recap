@@ -11,6 +11,7 @@ model User {
   id        String           @unique
   username  String
   histories SpotifyHistory[]
+  createdAt DateTime         @default(now())
 }
 
 model SpotifyHistory {
@@ -19,6 +20,7 @@ model SpotifyHistory {
   zipFileName   String
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   spotifyTracks SpotifyTrack[]
+  createdAt     DateTime       @default(now())
 }
 
 model SpotifyTrack {
