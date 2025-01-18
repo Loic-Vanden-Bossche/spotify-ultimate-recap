@@ -8,7 +8,7 @@ import type { ReportResponse } from "../../models/report-response.ts";
 export const HourlyChart = () => {
   const fetchData = async (settings: ChartsSettingsData) => {
     const response: ReportResponse<HourlyData[]> = await fetch(
-      `/api/charts/${settings.historyIds.join(";")}/${settings.years.join(";")}/hourly?combined=${settings.isCombined}`,
+      `/api/charts/${settings.historyIds.join(";")}/${settings.years.join(";")}/hourly?combined=${settings.isCombined}&proportional=${settings.isProportional}`,
     ).then((res) => res.json());
 
     return response;
@@ -18,7 +18,7 @@ export const HourlyChart = () => {
     response: ReportResponse<HourlyData[]>,
     settings: ChartsSettingsData,
   ): ReactEChartsProps["option"] => {
-    const { data, combinedYears } = response;
+    const { data } = response;
 
     const huesDomain = [
       142, // Green
@@ -49,23 +49,8 @@ export const HourlyChart = () => {
       return `Historique ${historyIdx + 1} - `;
     };
 
-    const getYData = (data: HourlyData[]) => {
-      if (settings.isProportional) {
-        const totalMinutes = data.reduce(
-          (acc, hourlyData) => acc + hourlyData.totalMinutes,
-          0,
-        );
-
-        return data.map((hourlyData) => {
-          return (hourlyData.totalMinutes / totalMinutes) * 100;
-        });
-      }
-
-      return data.map((hourlyData) => hourlyData.totalMinutes);
-    };
-
     const getYDomain = (data: HourlyData[], idx: number) => {
-      const processedData = getYData(data);
+      const processedData = data.map((hourlyData) => hourlyData.value);
 
       return processedData.map((value) => {
         const hueIndex = huesDomain[idx % huesDomain.length];
@@ -80,7 +65,7 @@ export const HourlyChart = () => {
     };
 
     historyIds.forEach((historyId, idx) => {
-      if (combinedYears) {
+      if (settings.isCombined) {
         const combinedData = data[historyId]?.combined || [];
         const xDomainForHistory = combinedData.map(
           (hourlyData) => hourlyData.hourOfDay + "h",
@@ -115,7 +100,7 @@ export const HourlyChart = () => {
 
     xDomain.sort((a, b) => parseInt(a) - parseInt(b));
 
-    if (!combinedYears) {
+    if (!settings.isCombined) {
       const uniqueYears = Array.from(new Set(years)).sort();
 
       uniqueYears.forEach((year) => {

@@ -2,10 +2,11 @@ import type { APIRoute } from "astro";
 import { Prisma, PrismaClient } from "@prisma/client";
 import type { HourlyData } from "../../../../../models/hourly-data.ts";
 import type { ReportResponse } from "../../../../../models/report-response.ts";
+import { prisma } from "../../../../../lib/prisma.ts";
 
 interface CombinedHourlyResponse {
   hourOfDay: string;
-  totalMinutes: number;
+  value: number;
   historyId: string;
 }
 
@@ -23,6 +24,7 @@ export const GET: APIRoute = async ({ params, request }) => {
 
   const url = new URL(request.url);
   const isCombined = url.searchParams.get("combined") === "true";
+  const isProportional = url.searchParams.get("proportional") === "true";
 
   if (!cookies) {
     throw new Error("No cookies found");
@@ -34,82 +36,106 @@ export const GET: APIRoute = async ({ params, request }) => {
     throw new Error("No user UUID found");
   }
 
-  const prisma = new PrismaClient();
+  const getData = async (): Promise<ReportResponse<HourlyData[]>> => {
+    if (isCombined) {
+      const withClause = isProportional
+        ? Prisma.sql`
+                  WITH TotalMinutes AS (SELECT SUM(CAST("msPlayed" / 60000 AS INTEGER)) AS "grandTotalMinutes"
+                                        FROM "SpotifyTrack"
+                                        WHERE "historyId" = ANY (${historyIds})
+                                          AND EXTRACT(YEAR FROM time) = ANY (${years}))
+        `
+        : Prisma.empty;
 
-  if (isCombined) {
-    const queryResult = await prisma.$queryRaw<CombinedHourlyResponse[]>(
-      Prisma.sql`
-          SELECT EXTRACT(HOUR FROM time) AS "hourOfDay",
-                 (CAST(SUM("msPlayed") / 60000 AS INTEGER)) AS "totalMinutes",
-          "historyId"
-          FROM "SpotifyTrack"
-          WHERE "historyId" = ANY(${historyIds}) AND EXTRACT(YEAR FROM time) = ANY(${years})
-          GROUP BY EXTRACT(HOUR FROM time), "historyId"
-          ORDER BY "hourOfDay" 
-      `,
-    );
+      const totalSelect = isProportional
+        ? Prisma.sql`
+          (CAST(SUM("msPlayed") / 60000 AS FLOAT) / (SELECT "grandTotalMinutes" FROM TotalMinutes)) * 100
+        `
+        : Prisma.sql`(CAST(SUM("msPlayed") / 60000 AS INTEGER))`;
 
-    const result: ReportResponse<HourlyData[]> = {
-      data: {},
-      combinedYears: true,
-    };
+      const queryResult = await prisma.$queryRaw<CombinedHourlyResponse[]>(
+        Prisma.sql`
+            ${withClause}
+            SELECT EXTRACT(HOUR FROM time) AS "hourOfDay",
+                   ${totalSelect}          AS "value",
+                   "historyId"
+            FROM "SpotifyTrack"
+            WHERE "historyId" = ANY (${historyIds})
+              AND EXTRACT(YEAR FROM time) = ANY (${years})
+            GROUP BY EXTRACT(HOUR FROM time), "historyId"
+            ORDER BY "hourOfDay"
+        `,
+      );
 
-    queryResult.forEach((hourlyData) => {
-      if (!result.data[hourlyData.historyId]) {
-        result.data[hourlyData.historyId] = {
-          combined: [],
-        };
-      }
+      const result: ReportResponse<HourlyData[]> = {
+        data: {},
+      };
 
-      result.data[hourlyData.historyId].combined.push({
-        hourOfDay: hourlyData.hourOfDay,
-        totalMinutes: hourlyData.totalMinutes,
+      queryResult.forEach((hourlyData) => {
+        if (!result.data[hourlyData.historyId]) {
+          result.data[hourlyData.historyId] = {
+            combined: [],
+          };
+        }
+
+        result.data[hourlyData.historyId].combined.push({
+          hourOfDay: hourlyData.hourOfDay,
+          value: hourlyData.value,
+        });
       });
-    });
 
-    return new Response(JSON.stringify(result), {
-      headers: {
-        "content-type": "application/json",
-      },
-    });
-  } else {
-    const aa = await prisma.$queryRaw<HourlyResponse[]>(
-      Prisma.sql`
-          SELECT EXTRACT(HOUR FROM time) AS "hourOfDay",
-                 EXTRACT(YEAR FROM time) AS "year",
-                 (CAST(SUM("msPlayed") / 60000 AS INTEGER)) AS "totalMinutes",
-          "historyId"
-          FROM "SpotifyTrack"
-          WHERE "historyId" = ANY(${historyIds}) AND EXTRACT(YEAR FROM time) = ANY(${years})
-          GROUP BY EXTRACT(HOUR FROM time), EXTRACT(YEAR FROM time), "historyId"
-          ORDER BY "hourOfDay"
-      `,
-    );
+      return result;
+    } else {
+      const totalSelect = isProportional
+        ? Prisma.sql`
+          (CAST(SUM("msPlayed") / 60000 AS FLOAT) /
+          SUM(CAST(SUM("msPlayed") / 60000 AS FLOAT))
+          OVER (PARTITION BY EXTRACT(YEAR FROM time), "historyId")) * 100
+        `
+        : Prisma.sql`(CAST(SUM("msPlayed") / 60000 AS INTEGER))`;
 
-    const result: ReportResponse<HourlyData[]> = {
-      data: {},
-      combinedYears: false,
-    };
+      const queryResult = await prisma.$queryRaw<HourlyResponse[]>(
+        Prisma.sql`
+            SELECT EXTRACT(HOUR FROM time) AS "hourOfDay",
+                   EXTRACT(YEAR FROM time) AS "year",
+                   "historyId",
+                   ${totalSelect}          AS "value"
+            FROM "SpotifyTrack"
+            WHERE "historyId" = ANY (${historyIds})
+              AND EXTRACT(YEAR FROM time) = ANY (${years})
+            GROUP BY EXTRACT(HOUR FROM time),
+                     EXTRACT(YEAR FROM time),
+                     "historyId"
+            ORDER BY "hourOfDay";
+        `,
+      );
 
-    aa.forEach((hourlyData) => {
-      if (!result.data[hourlyData.historyId]) {
-        result.data[hourlyData.historyId] = {};
-      }
+      const result: ReportResponse<HourlyData[]> = {
+        data: {},
+      };
 
-      if (!result.data[hourlyData.historyId][hourlyData.year]) {
-        result.data[hourlyData.historyId][hourlyData.year] = [];
-      }
+      queryResult.forEach((hourlyData) => {
+        if (!result.data[hourlyData.historyId]) {
+          result.data[hourlyData.historyId] = {};
+        }
 
-      result.data[hourlyData.historyId][hourlyData.year].push({
-        hourOfDay: hourlyData.hourOfDay,
-        totalMinutes: hourlyData.totalMinutes,
+        if (!result.data[hourlyData.historyId][hourlyData.year]) {
+          result.data[hourlyData.historyId][hourlyData.year] = [];
+        }
+
+        result.data[hourlyData.historyId][hourlyData.year].push({
+          hourOfDay: hourlyData.hourOfDay,
+          value: hourlyData.value,
+        });
       });
-    });
 
-    return new Response(JSON.stringify(result), {
-      headers: {
-        "content-type": "application/json",
-      },
-    });
-  }
+      return result;
+    }
+  };
+
+  return new Response(JSON.stringify(await getData()), {
+    headers: {
+      "content-type": "application/json",
+    },
+  });
 };
