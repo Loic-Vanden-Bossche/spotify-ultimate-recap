@@ -46,7 +46,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     if (isCombined) {
       const totalSelect = isProportional
         ? Prisma.sql`
-          (SUM("msPlayed") / 60000.0) / SUM(SUM("msPlayed") / 60000.0) OVER (PARTITION BY "historyId") * 100
+          CAST((SUM("msPlayed") / 60000.0) / SUM(SUM("msPlayed") / 60000.0) OVER (PARTITION BY "historyId") * 100 AS FLOAT)
         `
         : Prisma.sql`(CAST(SUM("msPlayed") / 60000 AS INTEGER))`;
 
@@ -83,9 +83,9 @@ export const GET: APIRoute = async ({ params, request }) => {
     } else {
       const totalSelect = isProportional
         ? Prisma.sql`
-          (CAST(SUM("msPlayed") / 60000 AS FLOAT) /
-          SUM(CAST(SUM("msPlayed") / 60000 AS FLOAT))
-          OVER (PARTITION BY EXTRACT(YEAR FROM time), "historyId")) * 100
+          CAST((SUM("msPlayed") / 60000.0 /
+          SUM(SUM("msPlayed") / 60000.0)
+          OVER (PARTITION BY EXTRACT(YEAR FROM time), "historyId")) * 100 AS FLOAT)
         `
         : Prisma.sql`(CAST(SUM("msPlayed") / 60000 AS INTEGER))`;
 
