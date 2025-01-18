@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Checkbox } from "./Checkbox";
+import { Checkbox } from "./Checkbox.tsx";
 
 interface Option {
   value: string;

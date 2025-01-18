@@ -1,11 +1,12 @@
+import type { EChartsOption } from "echarts";
+import { chartsRequestBuilder } from "../../lib/request-builder.ts";
+
 import { type ReactEChartsProps } from "../ReactECharts.tsx";
 import type { HourlyData } from "../../models/hourly-data.ts";
 
 import { DynamicChart } from "../DynamicChart.tsx";
 import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 import type { ReportResponse } from "../../models/report-response.ts";
-import type { EChartsOption } from "echarts";
-import { chartsRequestBuilder } from "../../lib/request-builder.ts";
 
 export const HourlyChart = () => {
   const fetchData = async (settings: ChartsSettingsData) => {

@@ -1,5 +1,5 @@
-import { waitOneSecond } from "./time-utils.ts";
 import { PrismaClient } from "@prisma/client";
+import { waitOneSecond } from "./time-utils.ts";
 import type { JSONFile } from "../models/json-file.ts";
 import type { SpotifyTrackJSON } from "../models/spotify-track-json.ts";
 

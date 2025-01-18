@@ -1,11 +1,11 @@
 import React, { type FC, useEffect, useState } from "react";
 import { MultiSelect } from "./Select.tsx";
 import { useSettingsStore } from "./store/settings.store.ts";
-import type { History } from "../lib/history.ts";
-import type { YearData } from "../lib/year-data.ts";
 import { Switch } from "./Switch.tsx";
 import { AnimatedSwitcher } from "./AnimatedSwitcher.tsx";
 import { Loader } from "./Loader.tsx";
+import type { YearData } from "../lib/year-data.ts";
+import type { History } from "../lib/history.ts";
 
 export interface ChartsSettingsData {
   years: string[];

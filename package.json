@@ -24,6 +24,7 @@
     "astro": "^5.1.5",
     "busboy": "^1.6.0",
     "echarts": "^5.6.0",
+    "eslint-plugin-import": "^2.31.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.1",
     "react": "^19.0.0",
@@ -44,8 +45,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx,astro}": [
-      "prettier --write",
-      "eslint --max-warnings 0 ."
+      "eslint --fix --max-warnings 0 . --ignore-pattern dist --ignore-pattern .astro"
     ],
     "*.{js,css,md}": "prettier --write"
   }

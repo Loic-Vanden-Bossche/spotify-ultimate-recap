@@ -1,7 +1,7 @@
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
-import eventBus from "../utils/eventBus.ts";
-import { Loader } from "./Loader";
+import { Loader } from "./Loader.tsx";
 import { UploadIcon } from "./icons/UploadIcon.tsx";
+import eventBus from "../utils/eventBus.ts";
 
 export const ImportButton = () => {
   const hiddenFileInput = useRef<HTMLInputElement | null>(null);

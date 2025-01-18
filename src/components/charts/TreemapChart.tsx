@@ -1,6 +1,6 @@
+import * as echarts from "echarts";
 import { type ReactEChartsProps } from "../ReactECharts.tsx";
 import { DynamicChart } from "../DynamicChart.tsx";
-import * as echarts from "echarts";
 import { minutesToHumanReadable } from "../../lib/time-utils.ts";
 
 interface TreemapData {

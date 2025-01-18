@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import eventBus from "../utils/eventBus.ts";
 import { Loader } from "./Loader.tsx";
+import eventBus from "../utils/eventBus.ts";
 
 export const UploadStatus = () => {
   const [status, setStatus] = useState<string | null>(null);
