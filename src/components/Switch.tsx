@@ -13,11 +13,11 @@ export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label }) => {
 
   return (
     <div
-      className="flex items-center cursor-pointer select-none"
+      className="flex items-center cursor-pointer select-none min-w-0"
       onClick={handleToggle}
     >
       <div
-        className={`relative w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ${
+        className={`relative w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-300 flex-none ${
           checked ? "bg-blue-500" : "bg-gray-300"
         }`}
       >
@@ -28,7 +28,9 @@ export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label }) => {
         />
       </div>
 
-      <span className="ml-3 text-white text-nowrap">{label}</span>
+      <span className="ml-3 text-white text-nowrap overflow-hidden text-ellipsis flex-1">
+        {label}
+      </span>
     </div>
   );
 };

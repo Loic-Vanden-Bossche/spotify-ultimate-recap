@@ -11,6 +11,7 @@ export interface ChartsSettingsData {
   years: string[];
   historyIds: string[];
   isCombined: boolean;
+  isProportional: boolean;
 }
 
 export const ChartsSettings: FC = () => {
@@ -23,6 +24,7 @@ export const ChartsSettings: FC = () => {
   const { setSettings, settings } = useSettingsStore((state) => state);
 
   const [isCombined, setIsCombined] = useState<boolean>(true);
+  const [isProportional, setIsProportional] = useState<boolean>(true);
 
   const fetchHistories = async () => {
     const data: History[] = await fetch(`/api/histories`).then((res) =>
@@ -49,6 +51,9 @@ export const ChartsSettings: FC = () => {
     const qpSelectedYear = new URLSearchParams(window.location.search).get("y");
 
     const qpIsCombined = new URLSearchParams(window.location.search).get("c");
+    const qpIsProportional = new URLSearchParams(window.location.search).get(
+      "p",
+    );
 
     fetchHistories().then(async (histories) => {
       setAvailableHistories(histories);
@@ -70,18 +75,22 @@ export const ChartsSettings: FC = () => {
         : years.map((year) => year.year);
 
       const isCombined = !(qpIsCombined === "false");
+      const isProportional = !(qpIsProportional === "false");
 
       setAvailableYears(years);
       setDefaultSettings({
         years: realSelectedYears,
         historyIds: realSelectedHistories,
         isCombined,
+        isProportional,
       });
       setIsCombined(isCombined);
+      setIsProportional(isProportional);
       setSettings({
         years: realSelectedYears,
         historyIds: realSelectedHistories,
         isCombined,
+        isProportional,
       });
     });
   }, []);
@@ -99,7 +108,7 @@ export const ChartsSettings: FC = () => {
   }, [settings]);
 
   return (
-    <section className="bg-black rounded-2xl p-6 h-24">
+    <section className="bg-black rounded-2xl p-6">
       <AnimatedSwitcher
         first={
           <div className="h-full w-full flex items-center justify-center">
@@ -107,49 +116,47 @@ export const ChartsSettings: FC = () => {
           </div>
         }
         second={
-          defaultSettings && (
-            <div
-              className={
-                "flex gap-8 items-center h-full [&>*]:flex-1 [&>*]:min-w-0"
-              }
-            >
-              <div className={"flex gap-4 [&>*]:flex-1 [&>*]:min-w-0 "}>
-                <MultiSelect
-                  defaultValues={defaultSettings?.historyIds}
-                  options={availableHistories.map((history) => ({
-                    label: history.id,
-                    value: history.id,
-                  }))}
-                  onChange={(value) => {
-                    if (!settings) {
-                      return;
-                    }
+          <div
+            className={"flex gap-8 items-center h-full [&>*]:flex-1 flex-wrap"}
+          >
+            <div className={"flex gap-4 min-w-56 [&>*]:flex-1 [&>*]:min-w-0"}>
+              <MultiSelect
+                defaultValues={defaultSettings?.historyIds}
+                options={availableHistories.map((history) => ({
+                  label: history.id,
+                  value: history.id,
+                }))}
+                onChange={(value) => {
+                  if (!settings) {
+                    return;
+                  }
 
-                    setSettings({
-                      ...settings,
-                      historyIds: value,
-                    });
-                  }}
-                />
-                <MultiSelect
-                  defaultValues={defaultSettings?.years}
-                  options={availableYears.map((year) => ({
-                    label: year.year,
-                    value: year.year,
-                  }))}
-                  onChange={(value) => {
-                    if (!settings) {
-                      return;
-                    }
+                  setSettings({
+                    ...settings,
+                    historyIds: value,
+                  });
+                }}
+              />
+              <MultiSelect
+                defaultValues={defaultSettings?.years}
+                options={availableYears.map((year) => ({
+                  label: year.year,
+                  value: year.year,
+                }))}
+                onChange={(value) => {
+                  if (!settings) {
+                    return;
+                  }
 
-                    setSettings({
-                      ...settings,
-                      years: value,
-                    });
-                  }}
-                />
-              </div>
+                  setSettings({
+                    ...settings,
+                    years: value,
+                  });
+                }}
+              />
+            </div>
 
+            <div className={"flex gap-4 justify-end max-w-full"}>
               <Switch
                 checked={isCombined}
                 onChange={(checked) => {
@@ -166,9 +173,26 @@ export const ChartsSettings: FC = () => {
                 }}
                 label="Combiner les annés"
               />
+              <Switch
+                checked={isProportional}
+                onChange={(checked) => {
+                  if (!settings) {
+                    return;
+                  }
+
+                  setIsProportional(checked);
+
+                  setSettings({
+                    ...settings,
+                    isProportional: checked,
+                  });
+                }}
+                label="Proportionnel"
+              />
             </div>
-          )
+          </div>
         }
+        autoHeight={true}
         isFirstActive={!defaultSettings}
       />
     </section>

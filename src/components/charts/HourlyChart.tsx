@@ -16,8 +16,22 @@ export const HourlyChart = () => {
 
   const getChartOptions = (
     response: ReportResponse<HourlyData[]>,
+    settings: ChartsSettingsData,
   ): ReactEChartsProps["option"] => {
     const { data, combinedYears } = response;
+
+    const huesDomain = [
+      142, // Green
+      277, // Purple
+      0, // Red
+      60, // Orange
+      200, // Blue
+      40, // Yellow
+      90, // Green
+      320, // Purple
+      20, // Red
+      80, // Orange
+    ];
 
     const historyIds = Object.keys(data);
     let xDomain: string[] = [];
@@ -27,12 +41,47 @@ export const HourlyChart = () => {
 
     let years: string[] = [];
 
-    historyIds.forEach((historyId) => {
+    const historyTagProvider = (historyIdx: number) => {
+      if (historyIds.length === 1) {
+        return "";
+      }
+
+      return `Historique ${historyIdx + 1} - `;
+    };
+
+    const getYData = (data: HourlyData[]) => {
+      if (settings.isProportional) {
+        const totalMinutes = data.reduce(
+          (acc, hourlyData) => acc + hourlyData.totalMinutes,
+          0,
+        );
+
+        return data.map((hourlyData) => {
+          return (hourlyData.totalMinutes / totalMinutes) * 100;
+        });
+      }
+
+      return data.map((hourlyData) => hourlyData.totalMinutes);
+    };
+
+    const getYDomain = (data: HourlyData[], idx: number) => {
+      const processedData = getYData(data);
+
+      return processedData.map((value) => {
+        const hueIndex = huesDomain[idx % huesDomain.length];
+        const lightness = 30 + (value / Math.max(...processedData)) * 40;
+        return {
+          value,
+          itemStyle: {
+            color: `hsl(${hueIndex}, 70%, ${lightness}%)`,
+          },
+        };
+      });
+    };
+
+    historyIds.forEach((historyId, idx) => {
       if (combinedYears) {
         const combinedData = data[historyId]?.combined || [];
-        const yDomain = combinedData.map(
-          (hourlyData) => hourlyData.totalMinutes,
-        );
         const xDomainForHistory = combinedData.map(
           (hourlyData) => hourlyData.hourOfDay + "h",
         );
@@ -41,16 +90,8 @@ export const HourlyChart = () => {
 
         series.push({
           type: "bar",
-          name: `${historyId} - Combined`,
-          data: yDomain.map((value) => {
-            const lightness = 30 + (value / Math.max(...yDomain)) * 40;
-            return {
-              value,
-              itemStyle: {
-                color: `hsl(142, 70%, ${lightness}%)`,
-              },
-            };
-          }),
+          name: `${historyTagProvider(idx)}Combiné`,
+          data: getYDomain(combinedData, idx),
         });
       } else {
         const historyYears = Object.keys(data[historyId]).filter(
@@ -72,31 +113,20 @@ export const HourlyChart = () => {
       }
     });
 
-    // Ensure the xDomain is ordered correctly (by hour)
     xDomain.sort((a, b) => parseInt(a) - parseInt(b));
 
     if (!combinedYears) {
-      // Reorder series to match the exact desired order
-      const uniqueYears = Array.from(new Set(years)).sort(); // Ensure years are unique and sorted
+      const uniqueYears = Array.from(new Set(years)).sort();
 
       uniqueYears.forEach((year) => {
-        historyIds.forEach((historyId) => {
-          if (combinedYears) {
-            // For combined years, just push the combined data series
-            const combinedData = data[historyId]?.combined || [];
-            series.push({
-              type: "bar",
-              name: `${historyId} - Combined`,
-              data: combinedData.map((hourlyData) => hourlyData.totalMinutes),
-            });
-          } else {
-            const yearData = data[historyId]?.[year] || [];
-            series.push({
-              type: "bar",
-              name: `${historyId} - ${year}`,
-              data: yearData.map((hourlyData) => hourlyData.totalMinutes),
-            });
-          }
+        historyIds.forEach((historyId, idx) => {
+          const yearData = data[historyId]?.[year] || [];
+
+          series.push({
+            type: "bar",
+            name: `${historyTagProvider(idx)}${year}`,
+            data: getYDomain(yearData, idx),
+          });
         });
       });
     }
@@ -121,6 +151,17 @@ export const HourlyChart = () => {
         trigger: "axis",
         axisPointer: {
           type: "shadow",
+        },
+        valueFormatter: (value) => {
+          if (value == null || typeof value !== "number") {
+            return "";
+          }
+
+          if (settings.isProportional) {
+            return `${value.toFixed(2)}%`;
+          }
+
+          return `${value} minutes`;
         },
       },
       xAxis: {

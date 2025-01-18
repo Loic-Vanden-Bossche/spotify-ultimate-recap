@@ -1,4 +1,4 @@
 export interface HourlyData {
-  hourOfDay: number;
+  hourOfDay: string;
   totalMinutes: number;
 }

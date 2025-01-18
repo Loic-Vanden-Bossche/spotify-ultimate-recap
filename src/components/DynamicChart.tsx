@@ -6,7 +6,10 @@ import type { ChartsSettingsData } from "./ChartsSettings.tsx";
 import { ReactECharts, type ReactEChartsProps } from "./ReactECharts.tsx";
 
 interface DynamicChartProps<T> {
-  getChartOptions: (data: T) => ReactEChartsProps["option"];
+  getChartOptions: (
+    data: T,
+    settings: ChartsSettingsData,
+  ) => ReactEChartsProps["option"];
   fetchData: (settings: ChartsSettingsData) => Promise<T>;
 }
 
@@ -26,7 +29,7 @@ export const DynamicChart = <T extends unknown>({
   const fetchChartData = async (settings: ChartsSettingsData) => {
     const fetchedData = await fetchData(settings);
 
-    setOption(getChartOptions(fetchedData));
+    setOption(getChartOptions(fetchedData, settings));
     setIsDataLoaded(true);
   };
 

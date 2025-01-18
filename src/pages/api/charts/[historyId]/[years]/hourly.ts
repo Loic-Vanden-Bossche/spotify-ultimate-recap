@@ -4,7 +4,7 @@ import type { HourlyData } from "../../../../../models/hourly-data.ts";
 import type { ReportResponse } from "../../../../../models/report-response.ts";
 
 interface CombinedHourlyResponse {
-  hourOfDay: number;
+  hourOfDay: string;
   totalMinutes: number;
   historyId: string;
 }
