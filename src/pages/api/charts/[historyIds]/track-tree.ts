@@ -17,7 +17,7 @@ interface TreemapNode {
 export const prerender = false;
 
 export const GET: APIRoute = async ({ params, request }) => {
-  const historyId: string = params.historyId || "";
+  const historyId: string = params.historyIds || "";
 
   const cookies = request.headers.get("cookie");
 

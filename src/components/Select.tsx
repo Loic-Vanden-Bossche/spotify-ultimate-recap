@@ -37,7 +37,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
       updatedOptions = [...selectedOptions, option];
     }
 
-    setSelectedOptions(updatedOptions);
+    setSelectedOptions(sortOptions(updatedOptions));
     onChange(updatedOptions.map((opt) => opt.value));
   };
 
@@ -48,6 +48,10 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     ) {
       setIsOpen(false);
     }
+  };
+
+  const sortOptions = (options: Option[]) => {
+    return options.sort((a, b) => a.label.localeCompare(b.label));
   };
 
   useEffect(() => {
@@ -62,9 +66,23 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
       const defaultOptions = options.filter((option) =>
         defaultValues.includes(option.value),
       );
-      setSelectedOptions(defaultOptions);
+      setSelectedOptions(sortOptions(defaultOptions));
     }
   }, [defaultValues]);
+
+  useEffect(() => {
+    const selectedNotInOptions = selectedOptions.some(
+      (selected) => !options.some((option) => option.value === selected.value),
+    );
+
+    if (selectedNotInOptions) {
+      const newSelectedOptions = selectedOptions.filter((selected) =>
+        options.some((option) => option.value === selected.value),
+      );
+
+      setSelectedOptions(sortOptions(newSelectedOptions));
+    }
+  }, [options]);
 
   return (
     <div ref={dropdownRef} className="relative">

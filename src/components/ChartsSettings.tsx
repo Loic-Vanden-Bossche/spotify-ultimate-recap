@@ -25,6 +25,7 @@ export const ChartsSettings: FC = () => {
 
   const [isCombined, setIsCombined] = useState<boolean>(true);
   const [isProportional, setIsProportional] = useState<boolean>(true);
+  const [selectedHistories, setSelectedHistories] = useState<string[]>([]);
 
   const fetchHistories = async () => {
     const data: History[] = await fetch(`/api/histories`).then((res) =>
@@ -34,9 +35,9 @@ export const ChartsSettings: FC = () => {
     return data;
   };
 
-  const fetchYears = async (historyId: string) => {
+  const fetchYears = async (historyIds: string[]) => {
     const data: YearData[] = await fetch(
-      `/api/histories/${historyId}/years`,
+      `/api/histories/${historyIds.join(";")}/years`,
     ).then((res) => res.json());
 
     return data;
@@ -48,12 +49,16 @@ export const ChartsSettings: FC = () => {
       "h",
     );
 
-    const qpSelectedYear = new URLSearchParams(window.location.search).get("y");
-
     const qpIsCombined = new URLSearchParams(window.location.search).get("c");
     const qpIsProportional = new URLSearchParams(window.location.search).get(
       "p",
     );
+
+    const isCombined = !(qpIsCombined === "false");
+    const isProportional = !(qpIsProportional === "false");
+
+    setIsCombined(isCombined);
+    setIsProportional(isProportional);
 
     fetchHistories().then(async (histories) => {
       setAvailableHistories(histories);
@@ -65,37 +70,65 @@ export const ChartsSettings: FC = () => {
         ? selectedHistories
         : [histories[0].id];
 
-      const years = await fetchYears(realSelectedHistories[0]);
-      const selectedYears = years
-        .filter((year) => qpSelectedYear?.split(";").includes(year.year))
-        .map((year) => year.year);
-
-      const realSelectedYears = selectedYears.length
-        ? selectedYears
-        : years.map((year) => year.year);
-
-      const isCombined = !(qpIsCombined === "false");
-      const isProportional = !(qpIsProportional === "false");
-
-      setAvailableYears(years);
-      setDefaultSettings({
-        years: realSelectedYears,
-        historyIds: realSelectedHistories,
-        isCombined,
-        isProportional,
-      });
-      setIsCombined(isCombined);
-      setIsProportional(isProportional);
-      setSettings({
-        years: realSelectedYears,
-        historyIds: realSelectedHistories,
-        isCombined,
-        isProportional,
-      });
+      setSelectedHistories(realSelectedHistories);
     });
   }, []);
 
-  // on settings changed, set query params
+  useEffect(() => {
+    if (selectedHistories.length) {
+      fetchYears(selectedHistories).then((years) => {
+        const isSameYears =
+          years.every((year) =>
+            availableYears.map((year) => year.year).includes(year.year),
+          ) && availableYears.length === years.length;
+
+        setAvailableYears(years);
+
+        let realSelectedYears: string[] = [];
+
+        if (!defaultSettings) {
+          const qpSelectedYear = new URLSearchParams(
+            window.location.search,
+          ).get("y");
+
+          const selectedYears = years
+            .filter((year) => qpSelectedYear?.split(";").includes(year.year))
+            .map((year) => year.year);
+
+          realSelectedYears = selectedYears.length
+            ? selectedYears
+            : years.map((year) => year.year);
+
+          setDefaultSettings({
+            years: realSelectedYears,
+            historyIds: selectedHistories,
+            isCombined,
+            isProportional,
+          });
+        }
+
+        console.log(isSameYears);
+        const newYears = isSameYears
+          ? settings?.years || []
+          : years.map((year) => year.year);
+
+        setDefaultSettings({
+          years: newYears,
+          historyIds: selectedHistories,
+          isCombined,
+          isProportional,
+        });
+
+        setSettings({
+          years: newYears,
+          historyIds: selectedHistories,
+          isCombined,
+          isProportional,
+        });
+      });
+    } else {
+    }
+  }, [selectedHistories]);
 
   useEffect(() => {
     if (settings) {
@@ -131,10 +164,7 @@ export const ChartsSettings: FC = () => {
                     return;
                   }
 
-                  setSettings({
-                    ...settings,
-                    historyIds: value,
-                  });
+                  setSelectedHistories(value);
                 }}
               />
               <MultiSelect

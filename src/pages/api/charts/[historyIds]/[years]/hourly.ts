@@ -16,7 +16,7 @@ interface HourlyResponse extends CombinedHourlyResponse {
 export const prerender = false;
 
 export const GET: APIRoute = async ({ params, request }) => {
-  const historyIds = (params.historyId || "").split(";");
+  const historyIds = (params.historyIds || "").split(";");
   const years = (params.years || "").split(";").map(Number);
 
   const cookies = request.headers.get("cookie");
@@ -82,7 +82,7 @@ export const GET: APIRoute = async ({ params, request }) => {
           FROM "SpotifyTrack"
           WHERE "historyId" = ANY(${historyIds}) AND EXTRACT(YEAR FROM time) = ANY(${years})
           GROUP BY EXTRACT(HOUR FROM time), EXTRACT(YEAR FROM time), "historyId"
-          ORDER BY "hourOfDay" 
+          ORDER BY "hourOfDay"
       `,
     );
 

@@ -1,12 +1,11 @@
 import type { APIRoute } from "astro";
 import { Prisma, PrismaClient } from "@prisma/client";
 import type { HourlyData } from "../../../../models/hourly-data.ts";
-import type { DailyData } from "../../../../models/daily-data.ts";
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ params, request }) => {
-  const historyId: string = params.historyId || "";
+  const historyId: string = params.historyIds || "";
 
   const cookies = request.headers.get("cookie");
 
@@ -33,24 +32,24 @@ export const GET: APIRoute = async ({ params, request }) => {
     throw new Error("History not found");
   }
 
-  // get the total minutes played per day date format: {yyyy}-{MM}-{dd}, should have 365 * 2 values for 2 years
-  const result = await prisma.$queryRaw<DailyData[]>(
+  const result = await prisma.$queryRaw<HourlyData[]>(
     Prisma.sql`
-        SELECT
-          DATE_TRUNC('day', time) AS "date",
-          (CAST(SUM("msPlayed") / 60000 AS INTEGER)) AS "totalMinutes"
-        FROM
-          "SpotifyTrack"
-        WHERE
-          "historyId" = ${historyId}
-        GROUP BY
-            "date"
-        ORDER BY
-          "date"
+      SELECT
+        "artistName" AS "artistName",
+        (CAST(SUM("msPlayed") / 60000 AS INTEGER)) AS "totalMinutes"
+      FROM
+        "SpotifyTrack"
+      WHERE
+        "historyId" = ${historyId}
+      GROUP BY
+          "artistName"
+      ORDER BY
+        "totalMinutes" DESC
+      LIMIT 15
     `,
   );
 
-  return new Response(JSON.stringify(result), {
+  return new Response(JSON.stringify(result.reverse()), {
     headers: {
       "content-type": "application/json",
     },

@@ -4,7 +4,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 export const prerender = false;
 
 export const GET: APIRoute = async ({ params, request }) => {
-  const historyId: string = params.historyId || "";
+  const historyIds = (params.historyIds || "").split(";");
 
   const cookies = request.headers.get("cookie");
 
@@ -20,16 +20,6 @@ export const GET: APIRoute = async ({ params, request }) => {
 
   const prisma = new PrismaClient();
 
-  const history = await prisma.spotifyHistory.findUnique({
-    where: {
-      id: historyId,
-    },
-  });
-
-  if (!history) {
-    throw new Error("History not found");
-  }
-
   const result = await prisma.$queryRaw<
     { year: number; totalDays: number; totalYearDays: number }[]
   >(
@@ -44,7 +34,7 @@ export const GET: APIRoute = async ({ params, request }) => {
             ELSE 365
             END AS "totalYearDays"
     FROM "SpotifyTrack"
-    WHERE "historyId" = ${history.id}
+    WHERE "historyId" = ANY(${historyIds})
     GROUP BY EXTRACT(YEAR FROM time)
     ORDER BY year
   `,
