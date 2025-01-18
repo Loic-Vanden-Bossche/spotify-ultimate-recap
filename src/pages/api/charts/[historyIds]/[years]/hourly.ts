@@ -20,6 +20,8 @@ export const GET: APIRoute = async ({ params, request }) => {
   const historyIds = (params.historyIds || "").split(";");
   const years = (params.years || "").split(";").map(Number);
 
+  const allYearsSelected = params.years === "all";
+
   const cookies = request.headers.get("cookie");
 
   const url = new URL(request.url);
@@ -35,6 +37,10 @@ export const GET: APIRoute = async ({ params, request }) => {
   if (!userUUID) {
     throw new Error("No user UUID found");
   }
+
+  const yearsCondition = allYearsSelected
+    ? Prisma.empty
+    : Prisma.sql`AND EXTRACT(YEAR FROM time) = ANY (${years})`;
 
   const getData = async (): Promise<ReportResponse<HourlyData[]>> => {
     if (isCombined) {
@@ -60,9 +66,8 @@ export const GET: APIRoute = async ({ params, request }) => {
                    ${totalSelect}          AS "value",
                    "historyId"
             FROM "SpotifyTrack"
-            WHERE "historyId" = ANY (${historyIds})
-              AND EXTRACT(YEAR FROM time) = ANY (${years})
-            GROUP BY EXTRACT(HOUR FROM time), "historyId"
+            WHERE "historyId" = ANY (${historyIds}) ${yearsCondition}
+            GROUP BY EXTRACT (HOUR FROM time), "historyId"
             ORDER BY "hourOfDay"
         `,
       );
@@ -101,11 +106,10 @@ export const GET: APIRoute = async ({ params, request }) => {
                    "historyId",
                    ${totalSelect}          AS "value"
             FROM "SpotifyTrack"
-            WHERE "historyId" = ANY (${historyIds})
-              AND EXTRACT(YEAR FROM time) = ANY (${years})
-            GROUP BY EXTRACT(HOUR FROM time),
-                     EXTRACT(YEAR FROM time),
-                     "historyId"
+            WHERE "historyId" = ANY (${historyIds}) ${yearsCondition}
+            GROUP BY EXTRACT (HOUR FROM time),
+                EXTRACT (YEAR FROM time),
+                "historyId"
             ORDER BY "hourOfDay";
         `,
       );

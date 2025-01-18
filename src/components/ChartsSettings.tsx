@@ -105,37 +105,70 @@ export const ChartsSettings: FC = () => {
             isCombined,
             isProportional,
           });
+        } else {
+          realSelectedYears = isSameYears
+            ? settings?.years || []
+            : years.map((year) => year.year);
+
+          if (!isSameYears) {
+            setDefaultSettings({
+              years: realSelectedYears,
+              historyIds: selectedHistories,
+              isCombined,
+              isProportional,
+            });
+          }
         }
 
-        const newYears = isSameYears
-          ? settings?.years || []
-          : years.map((year) => year.year);
+        const allYearsSelected =
+          realSelectedYears.length === years.length && years.length > 1;
 
-        setDefaultSettings({
-          years: newYears,
-          historyIds: selectedHistories,
-          isCombined,
-          isProportional,
-        });
+        if (allYearsSelected) {
+          realSelectedYears.push("all");
+        }
 
         setSettings({
-          years: newYears,
+          years: realSelectedYears,
           historyIds: selectedHistories,
           isCombined,
           isProportional,
         });
       });
-    } else {
     }
   }, [selectedHistories]);
 
   useEffect(() => {
     if (settings) {
       const url = new URL(window.location.href);
-      url.searchParams.set("y", settings.years.join(";"));
-      url.searchParams.set("h", settings.historyIds.join(";"));
-      url.searchParams.set("c", settings.isCombined ? "true" : "false");
-      url.searchParams.set("p", settings.isProportional ? "true" : "false");
+      const allYearsSelected = settings.years.includes("all");
+
+      if (allYearsSelected) {
+        url.searchParams.delete("y");
+      } else {
+        url.searchParams.set("y", settings.years.join(";"));
+      }
+
+      if (
+        availableHistories[0].id === settings.historyIds[0] &&
+        settings.historyIds.length === 1
+      ) {
+        url.searchParams.delete("h");
+      } else {
+        url.searchParams.set("h", settings.historyIds.join(";"));
+      }
+
+      if (!settings.isCombined) {
+        url.searchParams.set("c", "false");
+      } else {
+        url.searchParams.delete("c");
+      }
+
+      if (settings.isProportional) {
+        url.searchParams.set("p", "true");
+      } else {
+        url.searchParams.delete("p");
+      }
+
       window.history.pushState({}, "", url.toString());
     }
   }, [settings]);
@@ -159,12 +192,12 @@ export const ChartsSettings: FC = () => {
                   label: history.id,
                   value: history.id,
                 }))}
-                onChange={(value) => {
+                onChange={(values) => {
                   if (!settings) {
                     return;
                   }
 
-                  setSelectedHistories(value);
+                  setSelectedHistories(values);
                 }}
               />
               <MultiSelect
@@ -173,14 +206,22 @@ export const ChartsSettings: FC = () => {
                   label: year.year,
                   value: year.year,
                 }))}
-                onChange={(value) => {
+                onChange={(values) => {
                   if (!settings) {
                     return;
                   }
 
+                  const allYearsSelected =
+                    availableYears.length === values.length &&
+                    values.length > 1;
+
+                  if (allYearsSelected) {
+                    values.push("all");
+                  }
+
                   setSettings({
                     ...settings,
-                    years: value,
+                    years: values,
                   });
                 }}
               />

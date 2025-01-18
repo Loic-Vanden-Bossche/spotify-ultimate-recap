@@ -24,6 +24,14 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleOptionClick = (option: Option) => {
+    if (option.value === "all") {
+      const newOptions =
+        selectedOptions.length === options.length ? [] : options;
+      setSelectedOptions(sortOptions(newOptions));
+      onChange(newOptions.map((opt) => opt.value));
+      return;
+    }
+
     const isSelected = selectedOptions.some(
       (selected) => selected.value === option.value,
     );
@@ -35,6 +43,11 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
       );
     } else {
       updatedOptions = [...selectedOptions, option];
+    }
+
+    // Check if all options are selected, include "all"
+    if (updatedOptions.length === options.length) {
+      updatedOptions = sortOptions([...updatedOptions]);
     }
 
     setSelectedOptions(sortOptions(updatedOptions));
@@ -84,6 +97,8 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     }
   }, [options]);
 
+  const isAllSelected = selectedOptions.length === options.length;
+
   return (
     <div ref={dropdownRef} className="relative">
       <div
@@ -128,6 +143,23 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             isOpen ? "max-h-60" : "max-h-0"
           }`}
         >
+          <li
+            key="all"
+            className={`flex items-center group px-4 py-2 cursor-pointer text-gray-700 transition-all duration-300 ease-in-out hover:bg-gray-100 ${
+              isAllSelected ? "bg-gray-200" : ""
+            }`}
+            onClick={() =>
+              handleOptionClick({ value: "all", label: "Select All" })
+            }
+          >
+            <Checkbox
+              checked={isAllSelected}
+              onChange={() =>
+                handleOptionClick({ value: "all", label: "Select All" })
+              }
+              label="Select All"
+            />
+          </li>
           {options.map((option) => {
             const isSelected = selectedOptions.some(
               (selected) => selected.value === option.value,
