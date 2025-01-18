@@ -2,6 +2,7 @@ import * as echarts from "echarts";
 import { type ReactEChartsProps } from "../ReactECharts.tsx";
 import { DynamicChart } from "../DynamicChart.tsx";
 import { minutesToHumanReadable } from "../../lib/time-utils.ts";
+import { ChartContainer } from "../ChartContainer.tsx";
 
 interface TreemapData {
   name: string;
@@ -132,8 +133,10 @@ export const TreemapChart = () => {
   };
 
   return (
-    <div className={"h-[80vh]"}>
-      <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
-    </div>
+    <ChartContainer title={"Carte interractive des sons écoutés"}>
+      <div className={"h-[80vh]"}>
+        <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
+      </div>
+    </ChartContainer>
   );
 };

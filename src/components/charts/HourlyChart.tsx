@@ -1,4 +1,5 @@
 import type { EChartsOption } from "echarts";
+import { useState } from "react";
 import { chartsRequestBuilder } from "../../lib/request-builder.ts";
 
 import { type ReactEChartsProps } from "../ReactECharts.tsx";
@@ -7,8 +8,17 @@ import type { HourlyData } from "../../models/hourly-data.ts";
 import { DynamicChart } from "../DynamicChart.tsx";
 import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 import type { ReportResponse } from "../../models/report-response.ts";
+import { ChartContainer } from "../ChartContainer.tsx";
+
+interface HourlyChartCustomOptions {
+  stacked: boolean;
+}
 
 export const HourlyChart = () => {
+  const [customOptions, setCustomOptions] = useState<HourlyChartCustomOptions>({
+    stacked: false,
+  });
+
   const fetchData = async (settings: ChartsSettingsData) => {
     const response: ReportResponse<HourlyData[]> = await fetch(
       chartsRequestBuilder(settings, "hourly"),
@@ -20,8 +30,11 @@ export const HourlyChart = () => {
   const getChartOptions = (
     response: ReportResponse<HourlyData[]>,
     settings: ChartsSettingsData,
+    customOptions?: HourlyChartCustomOptions,
   ): ReactEChartsProps["option"] => {
     const { data } = response;
+    const { isCombined, isProportional } = settings;
+    const { stacked } = customOptions || { stacked: false };
 
     const huesDomain = [
       142, // Green
@@ -68,7 +81,7 @@ export const HourlyChart = () => {
     };
 
     historyIds.forEach((historyId, idx) => {
-      if (settings.isCombined) {
+      if (isCombined) {
         const combinedData = data[historyId]?.combined || [];
         const xDomainForHistory = combinedData.map(
           (hourlyData) => hourlyData.hourOfDay + "h",
@@ -78,6 +91,7 @@ export const HourlyChart = () => {
 
         series.push({
           type: "bar",
+          stack: stacked ? `stack` : undefined,
           name: `${historyTagProvider(idx)}Combiné`,
           data: getYDomain(combinedData, idx),
         });
@@ -104,16 +118,16 @@ export const HourlyChart = () => {
     xDomain.sort((a, b) => parseInt(a) - parseInt(b));
 
     const getYLabel = () => {
-      if (!settings.isCombined && settings.isProportional) {
+      if (!isCombined && isProportional) {
         return "Proportion dans l'année";
-      } else if (settings.isProportional) {
+      } else if (isProportional) {
         return "Proportion totale écoutée";
       }
 
       return "Minutes totales écoutées";
     };
 
-    if (!settings.isCombined) {
+    if (!isCombined) {
       const uniqueYears = Array.from(new Set(years)).sort();
 
       uniqueYears.forEach((year) => {
@@ -122,6 +136,7 @@ export const HourlyChart = () => {
 
           series.push({
             type: "bar",
+            stack: stacked ? `stack_${year}` : undefined,
             name: `${historyTagProvider(idx)}${year}`,
             data: getYDomain(yearData, idx),
           });
@@ -155,7 +170,7 @@ export const HourlyChart = () => {
             return "";
           }
 
-          if (settings.isProportional) {
+          if (isProportional) {
             return `${value.toFixed(2)}%`;
           }
 
@@ -180,8 +195,24 @@ export const HourlyChart = () => {
   };
 
   return (
-    <div className={"h-[500px]"}>
-      <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
-    </div>
+    <ChartContainer<HourlyChartCustomOptions>
+      title={"Distribution des heures d'écoute dans une journée"}
+      customOptions={[
+        {
+          key: "stacked",
+          default: false,
+          label: "Afficher les données empilées",
+        },
+      ]}
+      onCustomOptionChange={(options) => setCustomOptions(options)}
+    >
+      <div className={"h-[500px]"}>
+        <DynamicChart
+          customOptions={customOptions}
+          fetchData={fetchData}
+          getChartOptions={getChartOptions}
+        />
+      </div>
+    </ChartContainer>
   );
 };

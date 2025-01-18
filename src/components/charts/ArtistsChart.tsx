@@ -1,6 +1,7 @@
 import { type ReactEChartsProps } from "../ReactECharts.tsx";
 import type { ArtistsData } from "../../models/artists-data.ts";
 import { DynamicChart } from "../DynamicChart.tsx";
+import { ChartContainer } from "../ChartContainer.tsx";
 
 export const ArtistsChart = () => {
   const fetchData = async () => {
@@ -82,8 +83,10 @@ export const ArtistsChart = () => {
   };
 
   return (
-    <div className={"h-[500px]"}>
-      <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
-    </div>
+    <ChartContainer title={"Top 15 des artistes écoutés"}>
+      <div className={"h-[500px]"}>
+        <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
+      </div>
+    </ChartContainer>
   );
 };

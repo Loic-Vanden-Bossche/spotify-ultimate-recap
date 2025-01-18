@@ -2,6 +2,7 @@ import { useState } from "react";
 import { type ReactEChartsProps } from "../ReactECharts.tsx";
 import type { DailyData } from "../../models/daily-data.ts";
 import { DynamicChart } from "../DynamicChart.tsx";
+import { ChartContainer } from "../ChartContainer.tsx";
 
 export const DailyChart = () => {
   const [graphHeight, setGraphHeight] = useState<number>(0);
@@ -96,8 +97,10 @@ export const DailyChart = () => {
   };
 
   return (
-    <div style={{ height: graphHeight + "px" }}>
-      <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
-    </div>
+    <ChartContainer title={"Carte des écoutes par jour"}>
+      <div style={{ height: graphHeight + "px" }}>
+        <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
+      </div>
+    </ChartContainer>
   );
 };

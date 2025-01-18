@@ -5,20 +5,24 @@ import { useSettingsStore } from "./store/settings.store.ts";
 import type { ChartsSettingsData } from "./ChartsSettings.tsx";
 import { ReactECharts, type ReactEChartsProps } from "./ReactECharts.tsx";
 
-interface DynamicChartProps<T> {
+interface DynamicChartProps<T, K> {
   getChartOptions: (
     data: T,
     settings: ChartsSettingsData,
+    customOptions?: K,
   ) => ReactEChartsProps["option"];
   fetchData: (settings: ChartsSettingsData) => Promise<T>;
+  customOptions?: K;
 }
 
-export const DynamicChart = <T,>({
+export const DynamicChart = <T, K>({
   getChartOptions,
   fetchData,
-}: DynamicChartProps<T>) => {
+  customOptions,
+}: DynamicChartProps<T, K>) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [fetchedData, setFetchedData] = useState<T | null>(null);
   const [option, setOption] = useState<ReactEChartsProps["option"] | null>(
     null,
   );
@@ -29,9 +33,17 @@ export const DynamicChart = <T,>({
   const fetchChartData = async (settings: ChartsSettingsData) => {
     const fetchedData = await fetchData(settings);
 
-    setOption(getChartOptions(fetchedData, settings));
+    setFetchedData(fetchedData);
+
+    setOption(getChartOptions(fetchedData, settings, customOptions));
     setIsDataLoaded(true);
   };
+
+  useEffect(() => {
+    if (customOptions && fetchedData && settings) {
+      setOption(getChartOptions(fetchedData, settings, customOptions));
+    }
+  }, [customOptions]);
 
   useEffect(() => {
     if (!settings) {

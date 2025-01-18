@@ -5,7 +5,13 @@ export const chartsRequestBuilder = (
   chart: string,
 ): string => {
   const selectedYears = years.includes("all") ? ["all"] : years;
-  const basePath = `/api/charts/${historyIds.join(";")}/${selectedYears.join(";")}/${chart}`;
+  const basePath = [
+    "api",
+    "charts",
+    historyIds.join(";"),
+    selectedYears.join(";"),
+    chart,
+  ].join("/");
   const queryParams = `combined=${isCombined}&proportional=${isProportional}`;
 
   return `${basePath}?${queryParams}`;
