@@ -49,7 +49,7 @@ export const GET: APIRoute = async ({ params, request }) => {
                   WITH TotalMinutes AS (SELECT SUM(CAST("msPlayed" / 60000 AS INTEGER)) AS "grandTotalMinutes"
                                         FROM "SpotifyTrack"
                                         WHERE "historyId" = ANY (${historyIds})
-                                          AND EXTRACT(YEAR FROM time) = ANY (${years}))
+                                          ${yearsCondition})
         `
         : Prisma.empty;
 
