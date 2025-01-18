@@ -15,13 +15,15 @@ interface HourlyChartCustomOptions {
 }
 
 export const HourlyChart = () => {
+  const chartId = "hourly";
+
   const [customOptions, setCustomOptions] = useState<HourlyChartCustomOptions>({
     stacked: false,
   });
 
   const fetchData = async (settings: ChartsSettingsData) => {
     const response: ReportResponse<HourlyData[]> = await fetch(
-      chartsRequestBuilder(settings, "hourly"),
+      chartsRequestBuilder(settings, chartId),
     ).then((res) => res.json());
 
     return response;
@@ -197,6 +199,7 @@ export const HourlyChart = () => {
   return (
     <ChartContainer<HourlyChartCustomOptions>
       title={"Distribution des heures d'écoute dans une journée"}
+      chartId={chartId}
       customOptions={[
         {
           key: "stacked",

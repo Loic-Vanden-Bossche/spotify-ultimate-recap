@@ -4,11 +4,13 @@ import { DynamicChart } from "../DynamicChart.tsx";
 import { ChartContainer } from "../ChartContainer.tsx";
 
 export const ArtistsChart = () => {
+  const chartId = "artists";
+
   const fetchData = async () => {
     const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
 
     const data: ArtistsData[] = await fetch(
-      `/api/charts/${historyId}/artists`,
+      `/api/charts/${historyId}/${chartId}`,
     ).then((res) => res.json());
 
     return data;
@@ -83,7 +85,7 @@ export const ArtistsChart = () => {
   };
 
   return (
-    <ChartContainer title={"Top 15 des artistes écoutés"}>
+    <ChartContainer chartId={chartId} title={"Top 15 des artistes écoutés"}>
       <div className={"h-[500px]"}>
         <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
       </div>

@@ -9,6 +9,7 @@ interface ChartCustomOption<T, K extends keyof T = keyof T> {
 
 interface ChartContainerProps<T> {
   title: string;
+  chartId: string;
   children: ReactNode;
   customOptions?: ChartCustomOption<T>[];
   onCustomOptionChange?: (options: T) => void;
@@ -16,6 +17,7 @@ interface ChartContainerProps<T> {
 
 export const ChartContainer = <T,>({
   title,
+  chartId,
   children,
   customOptions,
   onCustomOptionChange,
@@ -32,6 +34,22 @@ export const ChartContainer = <T,>({
         {} as T,
       );
 
+      const qp = new URLSearchParams(window.location.search);
+
+      customOptions.forEach((option) => {
+        const value = qp.get(`${chartId}_${option.key as string}`);
+
+        if (value) {
+          if (typeof defaultOptions[option.key] === "boolean") {
+            // @ts-expect-error - we know this is a boolean
+            defaultOptions[option.key] = value === "true";
+          } else {
+            // @ts-expect-error - we know this is string
+            defaultOptions[option.key] = value;
+          }
+        }
+      });
+
       setOptions(defaultOptions);
     }
   }, []);
@@ -39,36 +57,62 @@ export const ChartContainer = <T,>({
   useEffect(() => {
     if (options && onCustomOptionChange) {
       onCustomOptionChange(options);
+
+      const qp = new URLSearchParams(window.location.search);
+
+      customOptions?.forEach((option) => {
+        const optionKey = `${chartId}_${option.key as string}`;
+        if (options[option.key] !== option.default) {
+          qp.set(optionKey, options[option.key] as string);
+          window.history.replaceState(
+            {},
+            "",
+            `${window.location.pathname}?${qp}`,
+          );
+        } else {
+          qp.delete(optionKey);
+          window.history.replaceState(
+            {},
+            "",
+            `${window.location.pathname}?${qp}`,
+          );
+        }
+      });
     }
   }, [options]);
 
   return (
     <section className="bg-black rounded-2xl p-6">
-      <h1 className="text-2xl mb-4">{title}</h1>
-      {customOptions &&
-        customOptions.map((option, i) => {
-          const value = options?.[option.key] || option.default;
+      <div className={"mb-4 flex items-center gap-4 justify-between flex-wrap"}>
+        <h1 className="text-2xl">{title}</h1>
+        {customOptions && (
+          <div className={"min-w-0"}>
+            {customOptions.map((option, i) => {
+              const value = options?.[option.key] || option.default;
 
-          if (typeof value === "boolean") {
-            return (
-              <Switch
-                key={i}
-                checked={value}
-                onChange={(checked) => {
-                  if (options) {
-                    setOptions({
-                      ...options,
-                      [option.key]: checked,
-                    });
-                  }
-                }}
-                label={option.label}
-              />
-            );
-          }
+              if (typeof value === "boolean") {
+                return (
+                  <Switch
+                    key={i}
+                    checked={value}
+                    onChange={(checked) => {
+                      if (options) {
+                        setOptions({
+                          ...options,
+                          [option.key]: checked,
+                        });
+                      }
+                    }}
+                    label={option.label}
+                  />
+                );
+              }
 
-          return null;
-        })}
+              return null;
+            })}
+          </div>
+        )}
+      </div>
       {children}
     </section>
   );

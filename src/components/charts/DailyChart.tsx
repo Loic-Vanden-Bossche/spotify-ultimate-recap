@@ -5,13 +5,15 @@ import { DynamicChart } from "../DynamicChart.tsx";
 import { ChartContainer } from "../ChartContainer.tsx";
 
 export const DailyChart = () => {
+  const chartId = "daily";
+
   const [graphHeight, setGraphHeight] = useState<number>(0);
 
   const fetchData = async () => {
     const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
 
     const data: DailyData[] = await fetch(
-      `/api/charts/${historyId}/daily`,
+      `/api/charts/${historyId}/${chartId}`,
     ).then((res) => res.json());
 
     return data;
@@ -97,7 +99,7 @@ export const DailyChart = () => {
   };
 
   return (
-    <ChartContainer title={"Carte des écoutes par jour"}>
+    <ChartContainer chartId={chartId} title={"Carte des écoutes par jour"}>
       <div style={{ height: graphHeight + "px" }}>
         <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
       </div>

@@ -183,7 +183,7 @@ export const ChartsSettings: FC = () => {
         }
         second={
           <div
-            className={"flex gap-8 items-center h-full [&>*]:flex-1 flex-wrap"}
+            className={"flex gap-4 items-center h-full [&>*]:flex-1 flex-wrap"}
           >
             <div className={"flex gap-4 min-w-56 [&>*]:flex-1 [&>*]:min-w-0"}>
               <MultiSelect

@@ -11,10 +11,12 @@ interface TreemapData {
 }
 
 export const TreemapChart = () => {
+  const chartId = "track-tree";
+
   const fetchData = async () => {
     const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
     const data: TreemapData[] = await fetch(
-      `/api/charts/${historyId}/track-tree`,
+      `/api/charts/${historyId}/${chartId}`,
     ).then((res) => res.json());
 
     return data;
@@ -133,7 +135,10 @@ export const TreemapChart = () => {
   };
 
   return (
-    <ChartContainer title={"Carte interractive des sons écoutés"}>
+    <ChartContainer
+      chartId={chartId}
+      title={"Carte interractive des sons écoutés"}
+    >
       <div className={"h-[80vh]"}>
         <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
       </div>
