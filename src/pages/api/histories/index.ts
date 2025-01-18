@@ -1,9 +1,9 @@
 import type { APIRoute } from "astro";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ params, request }) => {
+export const GET: APIRoute = async ({ request }) => {
   const cookies = request.headers.get("cookie");
 
   if (!cookies) {

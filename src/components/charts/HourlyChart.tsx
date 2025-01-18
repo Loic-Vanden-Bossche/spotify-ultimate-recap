@@ -4,6 +4,7 @@ import type { HourlyData } from "../../models/hourly-data.ts";
 import { DynamicChart } from "../DynamicChart.tsx";
 import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 import type { ReportResponse } from "../../models/report-response.ts";
+import type { EChartsOption } from "echarts";
 
 export const HourlyChart = () => {
   const fetchData = async (settings: ChartsSettingsData) => {
@@ -37,7 +38,7 @@ export const HourlyChart = () => {
 
     const historyIds = Object.keys(data);
     let xDomain: string[] = [];
-    let series: any[] = [];
+    const series: EChartsOption["series"] = [];
 
     historyIds.sort();
 

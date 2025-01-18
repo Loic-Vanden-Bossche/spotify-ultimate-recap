@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
 import { Prisma, PrismaClient } from "@prisma/client";
-import type { HourlyData } from "../../../../models/hourly-data.ts";
 import type { DailyData } from "../../../../models/daily-data.ts";
 
 export const prerender = false;

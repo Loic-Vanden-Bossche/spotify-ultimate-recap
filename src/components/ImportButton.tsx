@@ -1,10 +1,4 @@
-import {
-  type ChangeEvent,
-  type MouseEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import eventBus from "../utils/eventBus.ts";
 import { Loader } from "./Loader";
 import { UploadIcon } from "./icons/UploadIcon.tsx";
@@ -34,7 +28,7 @@ export const ImportButton = () => {
     };
   }, []);
 
-  const handleClick = (_: MouseEvent<HTMLButtonElement>) => {
+  const handleClick = () => {
     hiddenFileInput.current?.click();
   };
 

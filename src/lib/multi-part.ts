@@ -20,7 +20,7 @@ export const processMultiPartFile = (
     let fileName = "";
     let fileContent: Buffer | null = null;
 
-    // @ts-ignore
+    // @ts-expect-error - ReadableStream is not compatible with Readable
     const readable = Readable.fromWeb(input);
     readable.pipe(busboy);
 

@@ -1,8 +1,7 @@
-import { ReactECharts, type ReactEChartsProps } from "../ReactECharts.tsx";
+import { type ReactEChartsProps } from "../ReactECharts.tsx";
 import { DynamicChart } from "../DynamicChart.tsx";
 import * as echarts from "echarts";
 import { minutesToHumanReadable } from "../../lib/time-utils.ts";
-import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 
 interface TreemapData {
   name: string;
@@ -11,7 +10,7 @@ interface TreemapData {
 }
 
 export const TreemapChart = () => {
-  const fetchData = async (settings: ChartsSettingsData) => {
+  const fetchData = async () => {
     const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
     const data: TreemapData[] = await fetch(
       `/api/charts/${historyId}/track-tree`,
@@ -70,8 +69,13 @@ export const TreemapChart = () => {
         textStyle: {
           color: "white",
         },
-        formatter: (info: any) => {
-          const value = info.value;
+
+        formatter: (params) => {
+          const info = params as unknown as {
+            value: number;
+            treePathInfo: Array<{ name: string; value: number }>;
+          };
+          const value: number = info.value;
           const treePathInfo: TreemapData[] = info.treePathInfo;
 
           const tree = treePathInfo.filter((node) => !!node.name);
@@ -87,7 +91,7 @@ export const TreemapChart = () => {
             <h1 class="flex flex-wrap max-w-80">
                ${title}
             </h1>
-            
+
             <div class="h-2"> </div>
             <div class="flex flex-nowrap gap-2 items-center">
               <svg

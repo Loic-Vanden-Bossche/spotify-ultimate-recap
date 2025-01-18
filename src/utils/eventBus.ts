@@ -1,4 +1,4 @@
-type EventCallback<T = any> = (data: T) => void;
+type EventCallback<T = unknown> = (data: T) => void;
 
 class EventBus {
   private events: Record<string, EventCallback[]> = {};
@@ -10,7 +10,7 @@ class EventBus {
     this.events[event].push(callback);
   }
 
-  emit(event: string, data?: any) {
+  emit<T>(event: string, data?: T) {
     if (this.events[event]) {
       this.events[event].forEach((callback) => callback(data));
     }

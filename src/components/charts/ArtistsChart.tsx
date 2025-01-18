@@ -1,10 +1,9 @@
 import { type ReactEChartsProps } from "../ReactECharts.tsx";
 import type { ArtistsData } from "../../models/artists-data.ts";
 import { DynamicChart } from "../DynamicChart.tsx";
-import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 
 export const ArtistsChart = () => {
-  const fetchData = async (settings: ChartsSettingsData) => {
+  const fetchData = async () => {
     const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
 
     const data: ArtistsData[] = await fetch(

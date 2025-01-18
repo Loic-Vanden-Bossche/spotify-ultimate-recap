@@ -13,7 +13,7 @@ interface DynamicChartProps<T> {
   fetchData: (settings: ChartsSettingsData) => Promise<T>;
 }
 
-export const DynamicChart = <T extends unknown>({
+export const DynamicChart = <T,>({
   getChartOptions,
   fetchData,
 }: DynamicChartProps<T>) => {
