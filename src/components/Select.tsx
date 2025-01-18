@@ -157,7 +157,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
               onChange={() =>
                 handleOptionClick({ value: "all", label: "Select All" })
               }
-              label="Select All"
+              label="Tout sélectionner"
             />
           </li>
           {options.map((option) => {

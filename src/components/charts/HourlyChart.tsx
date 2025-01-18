@@ -103,6 +103,16 @@ export const HourlyChart = () => {
 
     xDomain.sort((a, b) => parseInt(a) - parseInt(b));
 
+    const getYLabel = () => {
+      if (!settings.isCombined && settings.isProportional) {
+        return "Proportion dans l'année";
+      } else if (settings.isProportional) {
+        return "Proportion totale écoutée";
+      }
+
+      return "Minutes totales écoutées";
+    };
+
     if (!settings.isCombined) {
       const uniqueYears = Array.from(new Set(years)).sort();
 
@@ -161,7 +171,7 @@ export const HourlyChart = () => {
       },
       yAxis: {
         type: "value",
-        name: "Minutes totales écoutées",
+        name: getYLabel(),
         nameLocation: "middle",
         nameGap: 60,
       },

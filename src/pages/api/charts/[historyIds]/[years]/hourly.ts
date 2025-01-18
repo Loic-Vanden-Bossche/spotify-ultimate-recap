@@ -44,31 +44,21 @@ export const GET: APIRoute = async ({ params, request }) => {
 
   const getData = async (): Promise<ReportResponse<HourlyData[]>> => {
     if (isCombined) {
-      const withClause = isProportional
-        ? Prisma.sql`
-                  WITH TotalMinutes AS (SELECT SUM(CAST("msPlayed" / 60000 AS INTEGER)) AS "grandTotalMinutes"
-                                        FROM "SpotifyTrack"
-                                        WHERE "historyId" = ANY (${historyIds})
-                                          ${yearsCondition})
-        `
-        : Prisma.empty;
-
       const totalSelect = isProportional
         ? Prisma.sql`
-          (CAST(SUM("msPlayed") / 60000 AS FLOAT) / (SELECT "grandTotalMinutes" FROM TotalMinutes)) * 100
+          (SUM("msPlayed") / 60000.0) / SUM(SUM("msPlayed") / 60000.0) OVER (PARTITION BY "historyId") * 100
         `
         : Prisma.sql`(CAST(SUM("msPlayed") / 60000 AS INTEGER))`;
 
       const queryResult = await prisma.$queryRaw<CombinedHourlyResponse[]>(
         Prisma.sql`
-            ${withClause}
             SELECT EXTRACT(HOUR FROM time) AS "hourOfDay",
                    ${totalSelect}          AS "value",
                    "historyId"
             FROM "SpotifyTrack"
             WHERE "historyId" = ANY (${historyIds}) ${yearsCondition}
             GROUP BY EXTRACT (HOUR FROM time), "historyId"
-            ORDER BY "hourOfDay"
+            ORDER BY "hourOfDay";
         `,
       );
 

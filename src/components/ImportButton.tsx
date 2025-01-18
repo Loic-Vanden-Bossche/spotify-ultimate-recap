@@ -127,7 +127,7 @@ export const ImportButton = () => {
         </span>
         <UploadIcon />
         <div className="w-3" />
-        <p>Import Spotify Data</p>
+        <p>Importer les donnéés Spotify</p>
       </button>
       <input
         className="hidden"
