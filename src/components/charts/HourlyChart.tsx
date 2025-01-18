@@ -5,13 +5,12 @@ import { DynamicChart } from "../DynamicChart.tsx";
 import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 import type { ReportResponse } from "../../models/report-response.ts";
 import type { EChartsOption } from "echarts";
+import { chartsRequestBuilder } from "../../lib/request-builder.ts";
 
 export const HourlyChart = () => {
   const fetchData = async (settings: ChartsSettingsData) => {
-    const years = settings.years.includes("all") ? ["all"] : settings.years;
-
     const response: ReportResponse<HourlyData[]> = await fetch(
-      `/api/charts/${settings.historyIds.join(";")}/${years.join(";")}/hourly?combined=${settings.isCombined}&proportional=${settings.isProportional}`,
+      chartsRequestBuilder(settings, "hourly"),
     ).then((res) => res.json());
 
     return response;
