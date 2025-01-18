@@ -47,6 +47,6 @@
     "*.{ts,tsx,astro}": [
       "eslint --fix --max-warnings 0 . --ignore-pattern dist --ignore-pattern .astro"
     ],
-    "*.{js,css,md}": "prettier --write"
+    "*.{ts,tsx,astro,js,css,md}": "prettier --write"
   }
 }
