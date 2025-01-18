@@ -55,7 +55,7 @@ export const ChartsSettings: FC = () => {
     );
 
     const isCombined = !(qpIsCombined === "false");
-    const isProportional = !(qpIsProportional === "false");
+    const isProportional = qpIsProportional === "true";
 
     setIsCombined(isCombined);
     setIsProportional(isProportional);
@@ -107,7 +107,6 @@ export const ChartsSettings: FC = () => {
           });
         }
 
-        console.log(isSameYears);
         const newYears = isSameYears
           ? settings?.years || []
           : years.map((year) => year.year);
@@ -136,6 +135,7 @@ export const ChartsSettings: FC = () => {
       url.searchParams.set("y", settings.years.join(";"));
       url.searchParams.set("h", settings.historyIds.join(";"));
       url.searchParams.set("c", settings.isCombined ? "true" : "false");
+      url.searchParams.set("p", settings.isProportional ? "true" : "false");
       window.history.pushState({}, "", url.toString());
     }
   }, [settings]);
