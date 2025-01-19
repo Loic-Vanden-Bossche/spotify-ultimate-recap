@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Checkbox } from "./Checkbox.tsx";
 
 interface Option {
@@ -19,6 +20,9 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   placeholder = "Select options",
   onChange,
 }) => {
+  const { i18n } = useTranslation();
+  const { t } = i18n;
+
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Option[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -157,7 +161,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
               onChange={() =>
                 handleOptionClick({ value: "all", label: "Select All" })
               }
-              label="Tout sélectionner"
+              label={t("Select All")}
             />
           </li>
           {options.map((option) => {

@@ -1,9 +1,13 @@
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Loader } from "./Loader.tsx";
 import { UploadIcon } from "./icons/UploadIcon.tsx";
 import eventBus from "../utils/eventBus.ts";
 
 export const ImportButton = () => {
+  const { i18n } = useTranslation();
+  const { t } = i18n;
+
   const hiddenFileInput = useRef<HTMLInputElement | null>(null);
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -127,7 +131,7 @@ export const ImportButton = () => {
         </span>
         <UploadIcon />
         <div className="w-3" />
-        <p>Importer les donnéés Spotify</p>
+        <p>{t("Import Spotify data")}</p>
       </button>
       <input
         className="hidden"

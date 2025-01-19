@@ -1,6 +1,10 @@
 {
   "translation": {
     "English": "English",
-    "French": "French"
+    "French": "French",
+    "Import Spotify data": "Import Spotify data",
+    "Select All": "Select All",
+    "Combined years": "Combined years",
+    "Proportional": "Proportional"
   }
 }

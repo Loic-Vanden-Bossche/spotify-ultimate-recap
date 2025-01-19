@@ -1,4 +1,5 @@
 import React, { type FC, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MultiSelect } from "./Select.tsx";
 import { useSettingsStore } from "./store/settings.store.ts";
 import { Switch } from "./Switch.tsx";
@@ -15,6 +16,9 @@ export interface ChartsSettingsData {
 }
 
 export const ChartsSettings: FC = () => {
+  const { i18n } = useTranslation();
+  const { t } = i18n;
+
   const [defaultSettings, setDefaultSettings] =
     useState<ChartsSettingsData | null>(null);
 
@@ -242,7 +246,7 @@ export const ChartsSettings: FC = () => {
                     isCombined: checked,
                   });
                 }}
-                label="Combiner les annés"
+                label={t("Combined years")}
               />
               <Switch
                 checked={isProportional}
@@ -258,7 +262,7 @@ export const ChartsSettings: FC = () => {
                     isProportional: checked,
                   });
                 }}
-                label="Proportionnel"
+                label={t("Proportional")}
               />
             </div>
           </div>
