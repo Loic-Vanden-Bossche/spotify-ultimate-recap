@@ -58,18 +58,22 @@ if (!cookieUUID) {
     },
   });
 
-  i18n
-    .use(languageDetector)
-    .use(initReactI18next)
-    .init({
-      supportedLngs: ["en", "fr"],
-      resources: {
-        en,
-        fr,
-      },
-      fallbackLng: "en",
-      interpolation: {
-        escapeValue: false,
-      },
-    });
+  // init only when page is loaded
+
+  window.onload = () => {
+    i18n
+      .use(languageDetector)
+      .use(initReactI18next)
+      .init({
+        supportedLngs: ["en", "fr"],
+        resources: {
+          en,
+          fr,
+        },
+        fallbackLng: "en",
+        interpolation: {
+          escapeValue: false,
+        },
+      });
+  };
 </script>

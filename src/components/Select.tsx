@@ -2,22 +2,24 @@ import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "./Checkbox.tsx";
 
-interface Option {
+export interface Option {
   value: string;
   label: string;
 }
 
-interface MultiSelectProps {
+interface SelectProps {
   defaultValues?: string[];
   options: Option[];
   placeholder?: string;
+  multiple?: boolean;
   onChange: (values: string[]) => void;
 }
 
-export const MultiSelect: React.FC<MultiSelectProps> = ({
+export const Select: React.FC<SelectProps> = ({
   defaultValues = [],
   options,
   placeholder = "Select options",
+  multiple = false,
   onChange,
 }) => {
   const { i18n } = useTranslation();
@@ -28,34 +30,43 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleOptionClick = (option: Option) => {
-    if (option.value === "all") {
-      const newOptions =
-        selectedOptions.length === options.length ? [] : options;
-      setSelectedOptions(sortOptions(newOptions));
-      onChange(newOptions.map((opt) => opt.value));
-      return;
-    }
+    if (multiple) {
+      if (option.value === "all") {
+        const newOptions =
+          selectedOptions.length === options.length ? [] : options;
+        setSelectedOptions(sortOptions(newOptions));
+        onChange(newOptions.map((opt) => opt.value));
+        return;
+      }
 
-    const isSelected = selectedOptions.some(
-      (selected) => selected.value === option.value,
-    );
-
-    let updatedOptions;
-    if (isSelected) {
-      updatedOptions = selectedOptions.filter(
-        (selected) => selected.value !== option.value,
+      const isSelected = selectedOptions.some(
+        (selected) => selected.value === option.value,
       );
+
+      let updatedOptions;
+      if (isSelected) {
+        updatedOptions = selectedOptions.filter(
+          (selected) => selected.value !== option.value,
+        );
+      } else {
+        updatedOptions = [...selectedOptions, option];
+      }
+
+      if (updatedOptions.length === options.length) {
+        updatedOptions = sortOptions([...updatedOptions]);
+      }
+
+      setSelectedOptions(sortOptions(updatedOptions));
+      onChange(updatedOptions.map((opt) => opt.value));
     } else {
-      updatedOptions = [...selectedOptions, option];
+      const isSelected = selectedOptions.some(
+        (selected) => selected.value === option.value,
+      );
+      const newOptions = isSelected ? [] : [option];
+      setSelectedOptions(newOptions);
+      onChange(newOptions.map((opt) => opt.value));
+      setIsOpen(false);
     }
-
-    // Check if all options are selected, include "all"
-    if (updatedOptions.length === options.length) {
-      updatedOptions = sortOptions([...updatedOptions]);
-    }
-
-    setSelectedOptions(sortOptions(updatedOptions));
-    onChange(updatedOptions.map((opt) => opt.value));
   };
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -103,6 +114,22 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 
   const isAllSelected = selectedOptions.length === options.length;
 
+  const getSingleSelectLabel = () => {
+    if (selectedOptions.length > 0) {
+      return selectedOptions[0].label;
+    }
+
+    if (defaultValues.length > 0) {
+      const defaultOption = options.find((option) =>
+        defaultValues.includes(option.value),
+      );
+
+      return defaultOption ? defaultOption.label : placeholder;
+    }
+
+    return placeholder;
+  };
+
   return (
     <div ref={dropdownRef} className="relative">
       <div
@@ -110,9 +137,11 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         onClick={() => setIsOpen((prev) => !prev)}
       >
         <span className="text-gray-700 text-nowrap overflow-hidden text-ellipsis">
-          {selectedOptions.length > 0
-            ? selectedOptions.map((opt) => opt.label).join(", ")
-            : placeholder}
+          {multiple
+            ? selectedOptions.length > 0
+              ? selectedOptions.map((opt) => opt.label).join(", ")
+              : placeholder
+            : getSingleSelectLabel()}
         </span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -147,23 +176,25 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             isOpen ? "max-h-60" : "max-h-0"
           }`}
         >
-          <li
-            key="all"
-            className={`flex items-center group px-4 py-2 cursor-pointer text-gray-700 transition-all duration-300 ease-in-out hover:bg-gray-100 ${
-              isAllSelected ? "bg-gray-200" : ""
-            }`}
-            onClick={() =>
-              handleOptionClick({ value: "all", label: "Select All" })
-            }
-          >
-            <Checkbox
-              checked={isAllSelected}
-              onChange={() =>
+          {multiple && (
+            <li
+              key="all"
+              className={`flex items-center group px-4 py-2 cursor-pointer text-gray-700 transition-all duration-300 ease-in-out hover:bg-gray-100 ${
+                isAllSelected ? "bg-gray-200" : ""
+              }`}
+              onClick={() =>
                 handleOptionClick({ value: "all", label: "Select All" })
               }
-              label={t("Select All")}
-            />
-          </li>
+            >
+              <Checkbox
+                checked={isAllSelected}
+                onChange={() =>
+                  handleOptionClick({ value: "all", label: "Select All" })
+                }
+                label={t("Select All")}
+              />
+            </li>
+          )}
           {options.map((option) => {
             const isSelected = selectedOptions.some(
               (selected) => selected.value === option.value,
@@ -177,11 +208,15 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 }`}
                 onClick={() => handleOptionClick(option)}
               >
-                <Checkbox
-                  checked={isSelected}
-                  onChange={() => handleOptionClick(option)}
-                  label={option.label}
-                />
+                {multiple ? (
+                  <Checkbox
+                    checked={isSelected}
+                    onChange={() => handleOptionClick(option)}
+                    label={option.label}
+                  />
+                ) : (
+                  <span className="w-full text-left">{option.label}</span>
+                )}
               </li>
             );
           })}

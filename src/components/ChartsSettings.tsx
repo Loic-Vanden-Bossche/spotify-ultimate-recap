@@ -1,6 +1,6 @@
 import React, { type FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MultiSelect } from "./Select.tsx";
+import { Select } from "./Select.tsx";
 import { useSettingsStore } from "./store/settings.store.ts";
 import { Switch } from "./Switch.tsx";
 import { AnimatedSwitcher } from "./AnimatedSwitcher.tsx";
@@ -190,7 +190,8 @@ export const ChartsSettings: FC = () => {
             className={"flex gap-4 items-center h-full [&>*]:flex-1 flex-wrap"}
           >
             <div className={"flex gap-4 min-w-56 [&>*]:flex-1 [&>*]:min-w-0"}>
-              <MultiSelect
+              <Select
+                multiple={true}
                 defaultValues={defaultSettings?.historyIds}
                 options={availableHistories.map((history) => ({
                   label: history.id,
@@ -204,7 +205,8 @@ export const ChartsSettings: FC = () => {
                   setSelectedHistories(values);
                 }}
               />
-              <MultiSelect
+              <Select
+                multiple={true}
                 defaultValues={defaultSettings?.years}
                 options={availableYears.map((year) => ({
                   label: year.year,

@@ -1,24 +1,28 @@
 import { useTranslation } from "react-i18next";
-import type { ChangeEvent } from "react";
 
 import React from "react";
+import { type Option, Select } from "./Select.tsx";
 
 export const LangSelector = () => {
   const { i18n } = useTranslation();
   const { t } = i18n;
 
-  const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    i18n.changeLanguage(e.target.value);
-  };
+  const options: Option[] = [
+    { value: "en", label: t("English") },
+    { value: "fr", label: t("French") },
+  ];
 
   return (
-    <select
-      className="text-sm bg-black text-white rounded-md px-3 py-2"
-      onChange={handleChange}
-      value={i18n.language}
-    >
-      <option value="en">{t("English")}</option>
-      <option value="fr">{t("French")}</option>
-    </select>
+    <div className={i18n.language ? "" : "opacity-0"}>
+      {i18n.language && (
+        <Select
+          defaultValues={[i18n.language]}
+          options={options}
+          onChange={(values) => {
+            i18n.changeLanguage(values[0]);
+          }}
+        />
+      )}
+    </div>
   );
 };
