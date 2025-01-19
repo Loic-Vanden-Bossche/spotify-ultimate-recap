@@ -1,0 +1,91 @@
+---
+import LanguageDetector, {
+  type CustomDetector,
+} from "i18next-browser-languagedetector";
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+
+import en from "../locales/en.json";
+import fr from "../locales/fr.json";
+
+const languageDetector = new LanguageDetector(null, {
+  order: ["astroCookie", "acceptLang"],
+  lookupCookie: "i18next",
+  caches: ["astroCookie"],
+  excludeCacheFor: ["cimode"],
+  convertDetectedLanguage: (lng) => {
+    const parts = lng.toLowerCase().split("-");
+    return parts[0];
+  },
+});
+
+const acceptLang: CustomDetector = {
+  name: "acceptLang",
+
+  lookup() {
+    const header = Astro.request.headers.get("accept-language");
+
+    if (!header) {
+      return;
+    }
+
+    const languages = header.split(",").map((l) => {
+      const [locale, q = "1"] = l.split(";");
+      return { locale, q: parseFloat(q.split("=")[1]) };
+    });
+
+    const sorted = languages.sort((a, b) => b.q - a.q);
+
+    return sorted[0].locale;
+  },
+};
+
+const astroCookie: CustomDetector = {
+  name: "astroCookie",
+
+  lookup(options) {
+    const cookie = Astro.request.headers.get("cookie");
+
+    if (!cookie) {
+      return;
+    }
+
+    const cookies = cookie.split(";").map((c) => {
+      const [name, value] = c.split("=").map((v) => v.trim());
+      return { name, value };
+    });
+
+    const i18nextCookie = cookies.find((c) => c.name === options.lookupCookie);
+
+    console.log(i18nextCookie, cookies, options.lookupCookie);
+
+    if (!i18nextCookie) {
+      return;
+    }
+
+    return i18nextCookie.value;
+  },
+
+  cacheUserLanguage(lng, options) {
+    Astro.response.headers.set("Set-Cookie", `${options.lookupCookie}=${lng}`);
+  },
+};
+
+languageDetector.addDetector(acceptLang);
+languageDetector.addDetector(astroCookie);
+
+i18n
+  .use(languageDetector)
+  .use(initReactI18next)
+  .init({
+    supportedLngs: ["en", "fr"],
+    resources: {
+      en,
+      fr,
+    },
+    fallbackLng: "en",
+    interpolation: {
+      escapeValue: false,
+    },
+  });
+---
