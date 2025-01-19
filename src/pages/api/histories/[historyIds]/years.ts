@@ -1,5 +1,7 @@
 import type { APIRoute } from "astro";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { prisma } from "../../../../lib/prisma.ts";
+import type { YearData } from "../../../../models/year-data.ts";
 
 export const prerender = false;
 
@@ -18,26 +20,21 @@ export const GET: APIRoute = async ({ params, request }) => {
     throw new Error("No user UUID found");
   }
 
-  const prisma = new PrismaClient();
-
-  const result = await prisma.$queryRaw<
-    { year: number; totalDays: number; totalYearDays: number }[]
-  >(
+  const result = await prisma.$queryRaw<YearData[]>(
     Prisma.sql`
-    SELECT 
-        EXTRACT(YEAR FROM time) AS year,
-        CAST(COUNT(DISTINCT DATE(time)) AS INTEGER) AS "totalDays",
-        CASE
-            WHEN MOD(EXTRACT(YEAR FROM time), 4) = 0
-                AND (MOD(EXTRACT(YEAR FROM time), 100) != 0 OR MOD(EXTRACT(YEAR FROM time), 400) = 0)
-                THEN 366
-            ELSE 365
-            END AS "totalYearDays"
-    FROM "SpotifyTrack"
-    WHERE "historyId" = ANY(${historyIds})
-    GROUP BY EXTRACT(YEAR FROM time)
-    ORDER BY year
-  `,
+        SELECT CAST("SpotifyYear"."year" AS TEXT)              AS "year",
+               CAST(SUM("SpotifyYear"."totalDays") AS INTEGER) AS "totalDays",
+               CASE
+                   WHEN MOD("year", 4) = 0
+                       AND (MOD("year", 100) != 0 OR MOD("year", 400) = 0)
+                       THEN 366
+                   ELSE 365
+                   END                                         AS "totalYearDays"
+        FROM "SpotifyYear"
+        WHERE "historyId" = ANY (${historyIds})
+        GROUP BY "year"
+        ORDER BY "year"
+    `,
   );
 
   return new Response(JSON.stringify(result), {

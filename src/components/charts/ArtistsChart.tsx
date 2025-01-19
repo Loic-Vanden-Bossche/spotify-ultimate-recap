@@ -7,7 +7,7 @@ export const ArtistsChart = () => {
   const chartId = "artists";
 
   const fetchData = async () => {
-    const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
+    const historyId = "893f5b4f-0ce5-4828-bfa2-e48cb56d3020";
 
     const data: ArtistsData[] = await fetch(
       `/api/charts/${historyId}/${chartId}`,

@@ -20,7 +20,19 @@ model SpotifyHistory {
   zipFileName   String
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   spotifyTracks SpotifyTrack[]
+  spotifyYears  SpotifyYear[]
   createdAt     DateTime       @default(now())
+}
+
+model SpotifyYear {
+  year          Int
+  history       SpotifyHistory @relation(fields: [historyId], references: [id], onDelete: Cascade)
+  historyId     String
+  totalDays     Int
+  totalMsPlayed BigInt
+  spotifyTracks SpotifyTrack[]
+
+  @@id([year, historyId])
 }
 
 model SpotifyTrack {
@@ -44,4 +56,6 @@ model SpotifyTrack {
   offlineTimestamp   DateTime?
   incognitoMode      Boolean
   jsonSourceFileName String
+  year               Int
+  spotifyYear        SpotifyYear    @relation(fields: [year, historyId], references: [year, historyId])
 }

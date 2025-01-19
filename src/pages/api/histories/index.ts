@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../../lib/prisma.ts";
 
 export const prerender = false;
 
@@ -15,8 +15,6 @@ export const GET: APIRoute = async ({ request }) => {
   if (!userUUID) {
     throw new Error("No user UUID found");
   }
-
-  const prisma = new PrismaClient();
 
   const userHistories = await prisma.spotifyHistory.findMany({
     where: {

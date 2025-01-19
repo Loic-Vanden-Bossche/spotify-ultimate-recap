@@ -1,7 +1,8 @@
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
-    "username" TEXT NOT NULL
+    "username" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -9,8 +10,19 @@ CREATE TABLE "SpotifyHistory" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "zipFileName" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "SpotifyHistory_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SpotifyYear" (
+    "year" INTEGER NOT NULL,
+    "historyId" TEXT NOT NULL,
+    "totalDays" INTEGER NOT NULL,
+    "totalMsPlayed" BIGINT NOT NULL,
+
+    CONSTRAINT "SpotifyYear_pkey" PRIMARY KEY ("year","historyId")
 );
 
 -- CreateTable
@@ -34,6 +46,7 @@ CREATE TABLE "SpotifyTrack" (
     "offlineTimestamp" TIMESTAMP(3),
     "incognitoMode" BOOLEAN NOT NULL,
     "jsonSourceFileName" TEXT NOT NULL,
+    "year" INTEGER NOT NULL,
 
     CONSTRAINT "SpotifyTrack_pkey" PRIMARY KEY ("id")
 );
@@ -45,4 +58,10 @@ CREATE UNIQUE INDEX "User_id_key" ON "User"("id");
 ALTER TABLE "SpotifyHistory" ADD CONSTRAINT "SpotifyHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "SpotifyYear" ADD CONSTRAINT "SpotifyYear_historyId_fkey" FOREIGN KEY ("historyId") REFERENCES "SpotifyHistory"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "SpotifyTrack" ADD CONSTRAINT "SpotifyTrack_historyId_fkey" FOREIGN KEY ("historyId") REFERENCES "SpotifyHistory"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SpotifyTrack" ADD CONSTRAINT "SpotifyTrack_year_historyId_fkey" FOREIGN KEY ("year", "historyId") REFERENCES "SpotifyYear"("year", "historyId") ON DELETE RESTRICT ON UPDATE CASCADE;
