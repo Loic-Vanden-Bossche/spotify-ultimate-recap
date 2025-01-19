@@ -1,5 +1,6 @@
 import type { EChartsOption } from "echarts";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { chartsRequestBuilder } from "../../lib/request-builder.ts";
 
 import { type ReactEChartsProps } from "../ReactECharts.tsx";
@@ -15,6 +16,9 @@ interface HourlyChartCustomOptions {
 }
 
 export const HourlyChart = () => {
+  const { i18n } = useTranslation();
+  const { t } = i18n;
+
   const chartId = "hourly";
 
   const [customOptions, setCustomOptions] = useState<HourlyChartCustomOptions>({
@@ -64,7 +68,7 @@ export const HourlyChart = () => {
         return "";
       }
 
-      return `Historique ${historyIdx + 1} - `;
+      return `${t("History")} ${historyIdx + 1} - `;
     };
 
     const getYDomain = (data: HourlyData[], idx: number) => {
@@ -94,7 +98,7 @@ export const HourlyChart = () => {
         series.push({
           type: "bar",
           stack: stacked ? `stack` : undefined,
-          name: `${historyTagProvider(idx)}Combiné`,
+          name: `${historyTagProvider(idx)}${t("Combined")}`,
           data: getYDomain(combinedData, idx),
         });
       } else {
@@ -121,12 +125,12 @@ export const HourlyChart = () => {
 
     const getYLabel = () => {
       if (!isCombined && isProportional) {
-        return "Proportion dans l'année";
+        return t("Proportion in the year");
       } else if (isProportional) {
-        return "Proportion totale écoutée";
+        return t("Total proportion listened");
       }
 
-      return "Minutes totales écoutées";
+      return t("Total minutes listened");
     };
 
     if (!isCombined) {
@@ -180,7 +184,7 @@ export const HourlyChart = () => {
         },
       },
       xAxis: {
-        name: "Heure de la journée",
+        name: t("Time of day"),
         type: "category",
         data: xDomain,
         nameLocation: "middle",
@@ -198,13 +202,13 @@ export const HourlyChart = () => {
 
   return (
     <ChartContainer<HourlyChartCustomOptions>
-      title={"Distribution des heures d'écoute dans une journée"}
+      title={t("Distribution of listening hours in a day")}
       chartId={chartId}
       customOptions={[
         {
           key: "stacked",
           default: false,
-          label: "Afficher les données empilées",
+          label: t("Show stacked data"),
         },
       ]}
       onCustomOptionChange={(options) => setCustomOptions(options)}

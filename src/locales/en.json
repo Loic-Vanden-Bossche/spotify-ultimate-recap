@@ -5,6 +5,14 @@
     "Import Spotify data": "Import Spotify data",
     "Select All": "Select All",
     "Combined years": "Combined years",
-    "Proportional": "Proportional"
+    "Proportional": "Proportional",
+    "History": "History",
+    "Distribution of listening hours in a day": "Distribution of listening hours in a day",
+    "Show stacked data": "Show stacked data",
+    "Proportion in the year": "Proportion in the year",
+    "Total proportion listened to": "Total proportion listened to",
+    "Total minutes listened": "Total minutes listened",
+    "Time of day": "Time of day",
+    "Combined": "Combined"
   }
 }

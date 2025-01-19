@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Loader } from "./Loader.tsx";
 import { AnimatedSwitcher } from "./AnimatedSwitcher.tsx";
 import { useSettingsStore } from "./store/settings.store.ts";
@@ -28,6 +29,9 @@ export const DynamicChart = <T, K>({
   );
   const chartRef = useRef(null);
 
+  const { i18n } = useTranslation();
+  const { language } = i18n;
+
   const settings = useSettingsStore((state) => state.settings);
 
   const fetchChartData = async (settings: ChartsSettingsData) => {
@@ -38,6 +42,12 @@ export const DynamicChart = <T, K>({
     setOption(getChartOptions(fetchedData, settings, customOptions));
     setIsDataLoaded(true);
   };
+
+  useEffect(() => {
+    if (fetchedData && settings) {
+      setOption(getChartOptions(fetchedData, settings, customOptions));
+    }
+  }, [language]);
 
   useEffect(() => {
     if (customOptions && fetchedData && settings) {
