@@ -65,8 +65,6 @@ const astroCookie: CustomDetector = {
 
     const i18nextCookie = cookies.find((c) => c.name === options.lookupCookie);
 
-    console.log(i18nextCookie, cookies, options.lookupCookie);
-
     if (!i18nextCookie) {
       return;
     }
