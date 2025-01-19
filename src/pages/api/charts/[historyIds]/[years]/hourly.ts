@@ -40,7 +40,7 @@ export const GET: APIRoute = async ({ params, request }) => {
 
   const yearsCondition = allYearsSelected
     ? Prisma.empty
-    : Prisma.sql`AND EXTRACT(YEAR FROM time) = ANY (${years})`;
+    : Prisma.sql`AND "year" = ANY (${years})`;
 
   const getData = async (): Promise<ReportResponse<HourlyData[]>> => {
     if (isCombined) {
@@ -85,20 +85,20 @@ export const GET: APIRoute = async ({ params, request }) => {
         ? Prisma.sql`
           CAST((SUM("msPlayed") / 60000.0 /
           SUM(SUM("msPlayed") / 60000.0)
-          OVER (PARTITION BY EXTRACT(YEAR FROM time), "historyId")) * 100 AS FLOAT)
+          OVER (PARTITION BY "year", "historyId")) * 100 AS FLOAT)
         `
         : Prisma.sql`(CAST(SUM("msPlayed") / 60000 AS INTEGER))`;
 
       const queryResult = await prisma.$queryRaw<HourlyResponse[]>(
         Prisma.sql`
             SELECT EXTRACT(HOUR FROM time) AS "hourOfDay",
-                   EXTRACT(YEAR FROM time) AS "year",
+                   "year",
                    "historyId",
                    ${totalSelect}          AS "value"
             FROM "SpotifyTrack"
             WHERE "historyId" = ANY (${historyIds}) ${yearsCondition}
             GROUP BY EXTRACT (HOUR FROM time),
-                EXTRACT (YEAR FROM time),
+                "year",
                 "historyId"
             ORDER BY "hourOfDay";
         `,
