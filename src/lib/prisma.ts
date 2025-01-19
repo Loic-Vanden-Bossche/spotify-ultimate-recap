@@ -17,6 +17,8 @@ if (optimizeApiKey) {
   prisma.$extends(withOptimize({ apiKey: optimizeApiKey }));
 }
 
-prisma.$on("query", async (e) => {
-  console.log(`${e.query} ${e.params}`);
-});
+if (process.env.NODE_ENV === "development") {
+  prisma.$on("query", (e) => {
+    console.log(`${e.query} ${e.params}`);
+  });
+}

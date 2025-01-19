@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-
 import React from "react";
+
 import { type Option, Select } from "./Select.tsx";
 
 export const LangSelector = () => {
