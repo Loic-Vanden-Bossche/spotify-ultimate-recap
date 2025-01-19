@@ -1,8 +1,9 @@
-import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader } from "./Loader.tsx";
 import { UploadIcon } from "./icons/UploadIcon.tsx";
-import eventBus from "../utils/eventBus.ts";
+import { useUploadStatusStore } from "./store/upload-status.store.ts";
+import { wait } from "../lib/time-utils.ts";
 
 export const ImportButton = () => {
   const { i18n } = useTranslation();
@@ -10,27 +11,9 @@ export const ImportButton = () => {
 
   const hiddenFileInput = useRef<HTMLInputElement | null>(null);
 
-  const [loading, setLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    const onStart = () => {
-      setLoading(true);
-    };
-
-    const onStop = () => {
-      setLoading(false);
-    };
-
-    eventBus.on("upload:start", onStart);
-    eventBus.on("upload:complete", onStop);
-    eventBus.on("upload:error", onStop);
-
-    return () => {
-      eventBus.off("upload:start", onStart);
-      eventBus.off("upload:complete", onStop);
-      eventBus.off("upload:error", onStop);
-    };
-  }, []);
+  const { uploadStatus, setUploadStatus } = useUploadStatusStore(
+    (state) => state,
+  );
 
   const handleClick = () => {
     hiddenFileInput.current?.click();
@@ -45,11 +28,47 @@ export const ImportButton = () => {
     event.target.value = "";
   };
 
+  const processUploadStatus = async (status: string, message: string) => {
+    const isError = status === "error";
+    const isLoading = status !== "complete";
+
+    const ending = isError || status === "complete";
+    const starting = status === "start";
+
+    const newStatus = {
+      isError,
+      isLoading,
+      status,
+      message,
+    };
+
+    if (starting) {
+      setUploadStatus({
+        ...newStatus,
+        message: "",
+        isLoading: false,
+      });
+      await wait(500);
+    }
+
+    setUploadStatus(newStatus);
+
+    if (ending) {
+      await wait(2000);
+      setUploadStatus({
+        ...newStatus,
+        message: "",
+      });
+      await wait(300);
+      setUploadStatus(null);
+    }
+  };
+
   const handleFileUpload = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    eventBus.emit("upload:start", { fileName: file.name });
+    processUploadStatus("start", "Envoi du fichier en cours...");
 
     const response = await fetch("/api/upload-file", {
       method: "POST",
@@ -58,7 +77,7 @@ export const ImportButton = () => {
 
     if (!response.body) {
       console.error("Failed to connect to SSE");
-      eventBus.emit("upload:error", { error: "Failed to connect to SSE" });
+      processUploadStatus("error", "Failed to connect to SSE");
       return;
     }
 
@@ -71,8 +90,6 @@ export const ImportButton = () => {
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
-          console.log("SSE Stream closed by the server.");
-          eventBus.emit("upload:end");
           break;
         }
 
@@ -100,7 +117,7 @@ export const ImportButton = () => {
 
             if (data) {
               try {
-                eventBus.emit(`upload:${eventName}`, JSON.parse(data));
+                processUploadStatus(eventName, JSON.parse(data).status);
               } catch (err) {
                 console.error("Error parsing SSE message:", err);
               }
@@ -120,14 +137,16 @@ export const ImportButton = () => {
       <button
         className={`bg-black text-white px-4 py-2 rounded-md flex items-center justify-center transition-all duration-300 ease-in-out disabled:opacity-80 hover:scale-95 hover:opacity-95`}
         onClick={handleClick}
-        disabled={loading}
+        disabled={uploadStatus?.isLoading}
       >
         <span
           className={`inline-block h-5 transition-all duration-300 ${
-            loading ? "opacity-100 w-5 mr-4" : "opacity-0 w-0 mr-0"
+            uploadStatus?.isLoading
+              ? "opacity-100 w-5 mr-4"
+              : "opacity-0 w-0 mr-0"
           }`}
         >
-          {loading && <Loader />}
+          {uploadStatus?.isLoading && <Loader />}
         </span>
         <UploadIcon />
         <div className="w-3" />

@@ -1,5 +1,6 @@
-export const waitOneSecond = () =>
-  new Promise((resolve) => setTimeout(resolve, 1000));
+export const waitOneSecond = () => wait(1000);
+export const wait = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 export const minutesToHumanReadable = (minutes: number) => {
   // if less than 60 minutes, display in minutes
