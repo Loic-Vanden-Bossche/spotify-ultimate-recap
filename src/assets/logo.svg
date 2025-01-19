@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+ <!-- Black circle background -->
+ <!-- Green vertical bars with varying sizes -->
+ <g class="layer">
+  <title>Layer 1</title>
+  <circle cx="100" cy="100" fill="black" id="svg_1" r="100"/>
+  <rect fill="#1bd760" height="103.18" id="svg_2" rx="7.5" width="15" x="46.64" y="62.78"/>
+  <rect fill="#1bd760" height="102.17" id="svg_3" rx="7.5" width="15" x="69.61" y="73.8"/>
+  <rect fill="#1bd760" height="164.2" id="svg_4" rx="7.5" width="15" x="92.46" y="16.4"/>
+  <rect fill="#1bd760" height="64.97" id="svg_7" rx="7.5" width="15" x="24.12" y="80.48"/>
+  <rect fill="#1bd760" height="145.48" id="svg_11" rx="7.5" width="15" x="116.24" y="30.85"/>
+  <rect fill="#1bd760" height="113.06" id="svg_13" rx="7.5" width="15" x="138.21" y="52.95"/>
+  <rect fill="#1bd760" height="74.52" id="svg_14" rx="7.5" width="15" x="159.55" y="73.34"/>
+ </g>
+</svg>
