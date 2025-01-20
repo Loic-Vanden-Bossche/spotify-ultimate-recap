@@ -17,6 +17,7 @@ model User {
 model SpotifyHistory {
   id            String         @id() @default(uuid())
   userId        String
+  trackCount    Int
   zipFileName   String
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   spotifyTracks SpotifyTrack[]

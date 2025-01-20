@@ -31,20 +31,6 @@ export const processImportData = async (
         });
       }
 
-      const history = await tx.spotifyHistory.create({
-        data: {
-          user: {
-            connect: {
-              id: userUUID,
-            },
-          },
-          zipFileName: fileName,
-        },
-        select: {
-          id: true,
-        },
-      });
-
       const mergedJsonFiles = jsonFiles.reduce(
         (acc, jsonFile) => [
           ...acc,
@@ -55,6 +41,21 @@ export const processImportData = async (
         ],
         [] as SpotifyTrackJSON[],
       );
+
+      const history = await tx.spotifyHistory.create({
+        data: {
+          user: {
+            connect: {
+              id: userUUID,
+            },
+          },
+          trackCount: mergedJsonFiles.length,
+          zipFileName: fileName,
+        },
+        select: {
+          id: true,
+        },
+      });
 
       progress("upload.importing", mergedJsonFiles.length);
 

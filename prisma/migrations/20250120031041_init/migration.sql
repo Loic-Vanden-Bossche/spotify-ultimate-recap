@@ -9,6 +9,7 @@ CREATE TABLE "User" (
 CREATE TABLE "SpotifyHistory" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "trackCount" INTEGER NOT NULL,
     "zipFileName" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
