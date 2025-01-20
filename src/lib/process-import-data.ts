@@ -7,9 +7,9 @@ export const processImportData = async (
   userUUID: string,
   fileName: string,
   jsonFiles: JSONFile[],
-  progress: (status: string) => void,
+  progress: (status: string, count: number) => void,
 ) => {
-  progress(`${jsonFiles.length} Fichiers de donnés récupérés`);
+  progress("upload.jsonFound", jsonFiles.length);
 
   await waitOneSecond();
 
@@ -56,7 +56,7 @@ export const processImportData = async (
         [] as SpotifyTrackJSON[],
       );
 
-      progress(`Importation de ${mergedJsonFiles.length} pistes`);
+      progress("upload.importing", mergedJsonFiles.length);
 
       const startTime = new Date();
 
@@ -138,7 +138,7 @@ export const processImportData = async (
       const endTime = new Date();
       const duration = endTime.getTime() - startTime.getTime();
 
-      progress(`Importation terminée en ${duration / 1000} secondes`);
+      progress("upload.timeTaken", duration / 1000);
     },
     {
       timeout: 10 * 60 * 1000,

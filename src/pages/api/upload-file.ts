@@ -39,7 +39,8 @@ export const POST: APIRoute = async ({ request }) => {
         controller.enqueue(
           encoder.encode(
             encodeMessage("progress", {
-              status: `Fichier ${fileName} envoyé`,
+              status: "upload.fileSent",
+              fileName,
             }),
           ),
         );
@@ -47,29 +48,35 @@ export const POST: APIRoute = async ({ request }) => {
         await waitOneSecond();
 
         if (!isZipFile(fileContent)) {
-          throw new Error("Le fichier envoyé n'est pas une archive ZIP");
+          throw new Error("upload.notZip");
         }
 
         const jsonFiles = extractJsonFromZip(fileContent);
 
         if (jsonFiles.length === 0) {
-          throw new Error("Aucun fichier JSON trouvé dans l'archive ZIP");
+          throw new Error("upload.noJson");
         }
 
-        await processImportData(userUUID, fileName, jsonFiles, (status) => {
-          controller.enqueue(
-            encoder.encode(
-              encodeMessage("progress", {
-                status,
-              }),
-            ),
-          );
-        });
+        await processImportData(
+          userUUID,
+          fileName,
+          jsonFiles,
+          (status, count) => {
+            controller.enqueue(
+              encoder.encode(
+                encodeMessage("progress", {
+                  status,
+                  count,
+                }),
+              ),
+            );
+          },
+        );
 
         controller.enqueue(
           encoder.encode(
             encodeMessage("complete", {
-              status: "Importation terminée",
+              status: "upload.finished",
             }),
           ),
         );
@@ -78,8 +85,7 @@ export const POST: APIRoute = async ({ request }) => {
         controller.enqueue(
           encoder.encode(
             encodeMessage("error", {
-              status: "Error",
-              message: (err as Error).message,
+              status: (err as Error).message,
             }),
           ),
         );

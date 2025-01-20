@@ -5,6 +5,12 @@ import { UploadIcon } from "./icons/UploadIcon.tsx";
 import { useUploadStatusStore } from "./store/upload-status.store.ts";
 import { wait } from "../lib/time-utils.ts";
 
+interface SSEMessage {
+  status: string;
+  count?: number;
+  fileName?: string;
+}
+
 export const ImportButton = () => {
   const { i18n } = useTranslation();
   const { t } = i18n;
@@ -34,6 +40,10 @@ export const ImportButton = () => {
 
     const ending = isError || status === "complete";
     const starting = status === "start";
+
+    if (status === "error") {
+      console.error(message);
+    }
 
     const newStatus = {
       isError,
@@ -68,7 +78,7 @@ export const ImportButton = () => {
     const formData = new FormData();
     formData.append("file", file);
 
-    processUploadStatus("start", "Envoi du fichier en cours...");
+    processUploadStatus("start", t("upload.sending"));
 
     const response = await fetch("/api/upload-file", {
       method: "POST",
@@ -76,8 +86,7 @@ export const ImportButton = () => {
     });
 
     if (!response.body) {
-      console.error("Failed to connect to SSE");
-      processUploadStatus("error", "Failed to connect to SSE");
+      processUploadStatus("error", t("upload.connectionFailed"));
       return;
     }
 
@@ -117,13 +126,23 @@ export const ImportButton = () => {
 
             if (data) {
               try {
-                processUploadStatus(eventName, JSON.parse(data).status);
+                const message: SSEMessage = JSON.parse(data);
+                processUploadStatus(
+                  eventName,
+                  t(message.status, {
+                    count: message.count,
+                    fileName: message.fileName,
+                  }),
+                );
               } catch (err) {
-                console.error("Error parsing SSE message:", err);
+                processUploadStatus(
+                  "error",
+                  t("upload.parsingFailed", { error: err }),
+                );
               }
             }
           } else {
-            console.error("Invalid SSE message: no event");
+            processUploadStatus("error", t("upload.noEventFailed"));
           }
         }
       }

@@ -13,6 +13,17 @@
     "Total proportion listened to": "Proportion totale écoutée",
     "Total minutes listened": "Total des minutes écoutées",
     "Time of day": "Heure de la journée",
-    "Combined": "Combiné"
+    "Combined": "Combiné",
+    "upload.sending": "Envoi du fichier en cours...",
+    "upload.connectionFailed": "Échec de la connexion SSE",
+    "upload.parsingFailed": "Échec de parsing du message SSE: {{error}}",
+    "upload.noEventFailed": "Message SSE invalide: pas d'événement",
+    "upload.fileSent": "Fichier {{fileName}} envoyé",
+    "upload.notZip": "Le fichier envoyé n'est pas une archive ZIP",
+    "upload.noJson": "Aucun fichier JSON trouvé dans l'archive ZIP",
+    "upload.finished": "Importation terminée",
+    "upload.importing": "Importation de {{count}} pistes",
+    "upload.jsonFound": "{{count}} Fichiers de donnés récupérés",
+    "upload.timeTaken": "Importation terminée en {{count}} secondes"
   }
 }
