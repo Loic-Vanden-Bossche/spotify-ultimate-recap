@@ -5,7 +5,7 @@ import { useSettingsStore } from "./store/settings.store.ts";
 import { Switch } from "./Switch.tsx";
 import { AnimatedSwitcher } from "./AnimatedSwitcher.tsx";
 import { Loader } from "./Loader.tsx";
-import type { History } from "../lib/history.ts";
+import type { History } from "../models/history.ts";
 import type { YearData } from "../models/year-data.ts";
 
 export interface ChartsSettingsData {
