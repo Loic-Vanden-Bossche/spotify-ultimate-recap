@@ -24,6 +24,11 @@
     "upload.finished": "Import completed",
     "upload.importing": "Importing {{count}} tracks",
     "upload.jsonFound": "{{count}} data files retrieved",
-    "upload.timeTaken": "Import completed in {{count}} seconds"
+    "upload.timeTaken": "Import completed in {{count}} seconds",
+    "tracks_one": "{{count}} track",
+    "tracks_other": "{{count}} tracks",
+    "years_one": "{{count}} year",
+    "years_other": "{{count}} years",
+    "Completed": "{{rate}}% completed"
   }
 }

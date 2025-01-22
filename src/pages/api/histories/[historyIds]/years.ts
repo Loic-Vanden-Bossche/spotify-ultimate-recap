@@ -22,14 +22,13 @@ export const GET: APIRoute = async ({ params, request }) => {
 
   const result = await prisma.$queryRaw<YearData[]>(
     Prisma.sql`
-        SELECT CAST("SpotifyYear"."year" AS TEXT)              AS "year",
-               CAST(SUM("SpotifyYear"."totalDays") AS INTEGER) AS "totalDays",
-               CASE
-                   WHEN MOD("year", 4) = 0
-                       AND (MOD("year", 100) != 0 OR MOD("year", 400) = 0)
-                       THEN 366
-                   ELSE 365
-                   END                                         AS "totalYearDays"
+        SELECT CAST("SpotifyYear"."year" AS TEXT) AS "year",
+               CAST((MIN("SpotifyYear"."totalDays") / CASE
+                                                          WHEN MOD("year", 4) = 0
+                                                              AND (MOD("year", 100) != 0 OR MOD("year", 400) = 0)
+                                                              THEN 366.0
+                                                          ELSE 365.0
+                   END) * 100 as FLOAT)           AS "completionRate"
         FROM "SpotifyYear"
         WHERE "historyId" = ANY (${historyIds})
         GROUP BY "year"

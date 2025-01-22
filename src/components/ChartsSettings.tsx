@@ -6,6 +6,7 @@ import { Switch } from "./Switch.tsx";
 import { AnimatedSwitcher } from "./AnimatedSwitcher.tsx";
 import { Loader } from "./Loader.tsx";
 import { HistoryLabel } from "./HistoryLabel.tsx";
+import { YearLabel } from "./YearLabel.tsx";
 import type { History } from "../models/history.ts";
 import type { YearData } from "../models/year-data.ts";
 
@@ -218,7 +219,7 @@ export const ChartsSettings: FC = () => {
                 multiple={true}
                 defaultValues={defaultSettings?.years}
                 options={availableYears.map((year) => ({
-                  label: year.year,
+                  label: <YearLabel year={year} />,
                   stringLabel: year.year,
                   value: year.year,
                 }))}
