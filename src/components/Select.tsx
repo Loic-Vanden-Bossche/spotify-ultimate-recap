@@ -26,6 +26,7 @@ export const Select: React.FC<SelectProps> = ({
   const { i18n } = useTranslation();
   const { t } = i18n;
 
+  const [isAnimating, setIsAnimating] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Option[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -109,6 +110,16 @@ export const Select: React.FC<SelectProps> = ({
   }, [defaultValues]);
 
   useEffect(() => {
+    if (selectedOptions.length && options.length) {
+      setSelectedOptions(
+        selectedOptions.map((selected) => {
+          return (
+            options.find((opt) => opt.value === selected.value) ?? selected
+          );
+        }),
+      );
+    }
+
     const selectedNotInOptions = selectedOptions.some(
       (selected) => !options.some((option) => option.value === selected.value),
     );
@@ -139,6 +150,18 @@ export const Select: React.FC<SelectProps> = ({
 
     return placeholder;
   };
+
+  const handleTransitionEnd = () => {
+    if (isOpen) {
+      setIsAnimating(false); // Animation finished
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsAnimating(true); // Start animation
+    }
+  }, [isOpen]);
 
   return (
     <div ref={dropdownRef} className="relative">
@@ -172,24 +195,20 @@ export const Select: React.FC<SelectProps> = ({
       </div>
 
       <div
-        className={`absolute mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg z-10 overflow-hidden transition-all duration-300 ease-in-out transform ${
-          isOpen
-            ? "max-h-60 opacity-100 scale-100"
-            : "max-h-0 opacity-0 scale-95"
+        className={`absolute mt-2 min-w-full w-max bg-white border border-gray-300 rounded-md shadow-lg z-10 overflow-hidden transform transition-all duration-300 ease-in-out ${
+          isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
-        style={{
-          transitionProperty: "max-height, opacity, transform",
-        }}
       >
         <ul
-          className={`overflow-auto transition-all duration-300 ease-in-out ${
+          className={`transition-all duration-300 ease-in-out ${!isAnimating && isOpen ? "overflow-auto" : "overflow-hidden"} ${
             isOpen ? "max-h-60" : "max-h-0"
           }`}
+          onTransitionEnd={handleTransitionEnd}
         >
           {multiple && (
             <li
               key="all"
-              className={`flex items-center group px-4 py-2 cursor-pointer text-gray-700 transition-all duration-300 ease-in-out hover:bg-gray-100 ${
+              className={`flex items-center group px-4 py-2 cursor-pointer text-gray-700 transition-colors duration-300 ease-in-out hover:bg-gray-100 ${
                 isAllSelected ? "bg-gray-200" : ""
               }`}
               onClick={() => handleOptionClick({ value: "all", label: "" })}
@@ -214,7 +233,7 @@ export const Select: React.FC<SelectProps> = ({
             return (
               <li
                 key={option.value}
-                className={`flex items-center group px-4 py-2 cursor-pointer text-gray-700 transition-all duration-300 ease-in-out hover:bg-gray-100 ${
+                className={`flex items-center group px-4 py-2 cursor-pointer text-gray-700 transition-colors duration-300 ease-in-out hover:bg-gray-100 ${
                   isSelected ? "bg-gray-200" : ""
                 }`}
                 onClick={() => handleOptionClick(option)}

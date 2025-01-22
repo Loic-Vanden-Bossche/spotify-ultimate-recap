@@ -5,6 +5,7 @@ import { useSettingsStore } from "./store/settings.store.ts";
 import { Switch } from "./Switch.tsx";
 import { AnimatedSwitcher } from "./AnimatedSwitcher.tsx";
 import { Loader } from "./Loader.tsx";
+import { HistoryLabel } from "./HistoryLabel.tsx";
 import type { History } from "../models/history.ts";
 import type { YearData } from "../models/year-data.ts";
 
@@ -177,6 +178,8 @@ export const ChartsSettings: FC = () => {
     }
   }, [settings]);
 
+  const historyLabel = t("History");
+
   return (
     <section className="bg-black rounded-2xl p-6">
       <AnimatedSwitcher
@@ -193,11 +196,16 @@ export const ChartsSettings: FC = () => {
               <Select
                 multiple={true}
                 defaultValues={defaultSettings?.historyIds}
-                options={availableHistories.map((history) => ({
-                  label: <div> {history.id} </div>,
-                  stringLabel: history.id,
-                  value: history.id,
-                }))}
+                options={availableHistories.map((history, idx) => {
+                  const stringLabel = `${historyLabel} ${idx + 1}`;
+                  return {
+                    label: (
+                      <HistoryLabel history={history} name={stringLabel} />
+                    ),
+                    stringLabel,
+                    value: history.id,
+                  };
+                })}
                 onChange={(values) => {
                   if (!settings) {
                     return;
