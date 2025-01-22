@@ -2,20 +2,18 @@ import type { APIRoute } from "astro";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../../lib/prisma.ts";
 import type { History } from "../../../models/history.ts";
+import { extractUserId } from "../../../models/extract-user-id.ts";
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request }) => {
-  const cookies = request.headers.get("cookie");
-
-  if (!cookies) {
-    throw new Error("No cookies found");
-  }
-
-  const userUUID = cookies.split("uuid=")[1].split(";")[0];
+  const userUUID = await extractUserId(request.headers);
 
   if (!userUUID) {
-    throw new Error("No user UUID found");
+    return new Response(null, {
+      status: 401,
+      statusText: "Unauthorized",
+    });
   }
 
   const userHistories = await prisma.$queryRaw<History[]>(

@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import type { HourlyData } from "../../../../../models/hourly-data.ts";
 import type { ReportResponse } from "../../../../../models/report-response.ts";
 import { prisma } from "../../../../../lib/prisma.ts";
+import { checkUserHistories } from "../../../../../models/check-user-histories.ts";
 
 interface CombinedHourlyResponse {
   hourOfDay: string;
@@ -18,25 +19,19 @@ export const prerender = false;
 
 export const GET: APIRoute = async ({ params, request }) => {
   const historyIds = (params.historyIds || "").split(";");
+
+  const error = await checkUserHistories(request.headers, historyIds);
+
+  if (error) {
+    return new Response(null, error);
+  }
+
   const years = (params.years || "").split(";").map(Number);
-
   const allYearsSelected = params.years === "all";
-
-  const cookies = request.headers.get("cookie");
 
   const url = new URL(request.url);
   const isCombined = url.searchParams.get("combined") === "true";
   const isProportional = url.searchParams.get("proportional") === "true";
-
-  if (!cookies) {
-    throw new Error("No cookies found");
-  }
-
-  const userUUID = cookies.split("uuid=")[1].split(";")[0];
-
-  if (!userUUID) {
-    throw new Error("No user UUID found");
-  }
 
   const yearsCondition = allYearsSelected
     ? Prisma.empty

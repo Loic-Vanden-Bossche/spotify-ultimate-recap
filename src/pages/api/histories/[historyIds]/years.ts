@@ -2,22 +2,17 @@ import type { APIRoute } from "astro";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../../../lib/prisma.ts";
 import type { YearData } from "../../../../models/year-data.ts";
+import { checkUserHistories } from "../../../../models/check-user-histories.ts";
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ params, request }) => {
   const historyIds = (params.historyIds || "").split(";");
 
-  const cookies = request.headers.get("cookie");
+  const error = await checkUserHistories(request.headers, historyIds);
 
-  if (!cookies) {
-    throw new Error("No cookies found");
-  }
-
-  const userUUID = cookies.split("uuid=")[1].split(";")[0];
-
-  if (!userUUID) {
-    throw new Error("No user UUID found");
+  if (error) {
+    return new Response(null, error);
   }
 
   const result = await prisma.$queryRaw<YearData[]>(
