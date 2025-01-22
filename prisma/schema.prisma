@@ -12,6 +12,8 @@ model User {
   username  String
   histories SpotifyHistory[]
   createdAt DateTime         @default(now())
+
+  SharedChart SharedChart[]
 }
 
 model SpotifyHistory {
@@ -23,6 +25,8 @@ model SpotifyHistory {
   spotifyTracks SpotifyTrack[]
   spotifyYears  SpotifyYear[]
   createdAt     DateTime       @default(now())
+
+  SharedChartHistory SharedChartHistory[]
 }
 
 model SpotifyYear {
@@ -59,4 +63,42 @@ model SpotifyTrack {
   jsonSourceFileName String
   year               Int
   spotifyYear        SpotifyYear    @relation(fields: [year, historyId], references: [year, historyId])
+}
+
+model SharedChart {
+  id         String @id() @default(uuid())
+  uniqueHash String @unique
+  userId     String
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  isRestricted Boolean
+
+  isProportional Boolean
+  isCombined     Boolean
+
+  rawQpSettings String
+
+  chart String?
+
+  sharedChartHistories SharedChartHistory[]
+  sharedChartYears     SharedChartYear[]
+}
+
+model SharedChartHistory {
+  historyId     String
+  sharedChartId String
+
+  sharedChart    SharedChart    @relation(fields: [sharedChartId], references: [id], onDelete: Cascade)
+  spotifyHistory SpotifyHistory @relation(fields: [historyId], references: [id], onDelete: Cascade)
+
+  @@unique([historyId, sharedChartId])
+}
+
+model SharedChartYear {
+  year          Int
+  sharedChartId String
+
+  sharedChart SharedChart @relation(fields: [sharedChartId], references: [id], onDelete: Cascade)
+
+  @@unique([year, sharedChartId])
 }

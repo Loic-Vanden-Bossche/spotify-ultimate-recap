@@ -4,6 +4,10 @@ import type { HourlyData } from "../../../../../models/hourly-data.ts";
 import type { ReportResponse } from "../../../../../models/report-response.ts";
 import { prisma } from "../../../../../lib/prisma.ts";
 import { checkUserHistories } from "../../../../../models/check-user-histories.ts";
+import { parseUrlYears } from "../../../../../lib/parse-url-years.ts";
+import { parseUrlHistories } from "../../../../../lib/parse-url-histories.ts";
+import { parseUrlSettings } from "../../../../../lib/parse-url-settings.ts";
+import { extractUserId } from "../../../../../models/extract-user-id.ts";
 
 interface CombinedHourlyResponse {
   hourOfDay: string;
@@ -18,20 +22,17 @@ interface HourlyResponse extends CombinedHourlyResponse {
 export const prerender = false;
 
 export const GET: APIRoute = async ({ params, request }) => {
-  const historyIds = (params.historyIds || "").split(";");
+  const historyIds = parseUrlHistories(params);
+  const userUUID = await extractUserId(request.headers);
 
-  const error = await checkUserHistories(request.headers, historyIds);
+  const error = await checkUserHistories(userUUID, historyIds);
 
   if (error) {
     return new Response(null, error);
   }
 
-  const years = (params.years || "").split(";").map(Number);
-  const allYearsSelected = params.years === "all";
-
-  const url = new URL(request.url);
-  const isCombined = url.searchParams.get("combined") === "true";
-  const isProportional = url.searchParams.get("proportional") === "true";
+  const { years, allYearsSelected } = parseUrlYears(params);
+  const { isCombined, isProportional } = parseUrlSettings(request.url);
 
   const yearsCondition = allYearsSelected
     ? Prisma.empty

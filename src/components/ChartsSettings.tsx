@@ -51,14 +51,12 @@ export const ChartsSettings: FC = () => {
 
   // set default settings
   useEffect(() => {
-    const qpSelectedHistory = new URLSearchParams(window.location.search).get(
-      "h",
-    );
+    const url = new URLSearchParams(window.location.search);
 
-    const qpIsCombined = new URLSearchParams(window.location.search).get("c");
-    const qpIsProportional = new URLSearchParams(window.location.search).get(
-      "p",
-    );
+    const qpSelectedHistory = url.get("h");
+
+    const qpIsCombined = url.get("c");
+    const qpIsProportional = url.get("p");
 
     const isCombined = !(qpIsCombined === "false");
     const isProportional = qpIsProportional === "true";
@@ -90,12 +88,11 @@ export const ChartsSettings: FC = () => {
 
         setAvailableYears(years);
 
-        let realSelectedYears: string[] = [];
+        let realSelectedYears: string[];
 
         if (!defaultSettings) {
-          const qpSelectedYear = new URLSearchParams(
-            window.location.search,
-          ).get("y");
+          const url = new URLSearchParams(window.location.search);
+          const qpSelectedYear = url.get("y");
 
           const selectedYears = years
             .filter((year) => qpSelectedYear?.split(";").includes(year.year))

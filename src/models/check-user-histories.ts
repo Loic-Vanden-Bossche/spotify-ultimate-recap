@@ -1,13 +1,10 @@
-import { extractUserId } from "./extract-user-id.ts";
 import { prisma } from "../lib/prisma.ts";
 
 export const checkUserHistories = async (
-  headers: Headers,
+  userId: string | null,
   historyIds: string[],
 ): Promise<ResponseInit | null> => {
-  const userUUID = await extractUserId(headers);
-
-  if (!userUUID) {
+  if (!userId) {
     return {
       status: 401,
       statusText: "Unauthorized",
@@ -19,7 +16,7 @@ export const checkUserHistories = async (
       id: {
         in: historyIds,
       },
-      userId: userUUID,
+      userId,
     },
     select: {
       id: true,
