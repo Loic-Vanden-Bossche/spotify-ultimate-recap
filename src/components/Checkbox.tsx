@@ -1,7 +1,7 @@
-import React, { type JSX } from "react";
+import React, { type JSX, type ReactNode } from "react";
 
 interface CheckboxProps {
-  label: string;
+  label: ReactNode;
   checked?: boolean;
   onChange: (checked: boolean) => void;
   icon?: JSX.Element;

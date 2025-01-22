@@ -194,7 +194,8 @@ export const ChartsSettings: FC = () => {
                 multiple={true}
                 defaultValues={defaultSettings?.historyIds}
                 options={availableHistories.map((history) => ({
-                  label: history.id,
+                  label: <div> {history.id} </div>,
+                  stringLabel: history.id,
                   value: history.id,
                 }))}
                 onChange={(values) => {
@@ -210,6 +211,7 @@ export const ChartsSettings: FC = () => {
                 defaultValues={defaultSettings?.years}
                 options={availableYears.map((year) => ({
                   label: year.year,
+                  stringLabel: year.year,
                   value: year.year,
                 }))}
                 onChange={(values) => {

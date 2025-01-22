@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "./Checkbox.tsx";
 
 export interface Option {
   value: string;
-  label: string;
+  stringLabel?: string;
+  label: ReactNode;
 }
 
 interface SelectProps {
@@ -78,8 +79,17 @@ export const Select: React.FC<SelectProps> = ({
     }
   };
 
+  const getLabelFromOption = (option: Option) => {
+    return option.stringLabel || option.label;
+  };
   const sortOptions = (options: Option[]) => {
-    return options.sort((a, b) => a.label.localeCompare(b.label));
+    return options.sort((a, b) => {
+      if (a.stringLabel && b.stringLabel) {
+        return a.stringLabel.localeCompare(b.stringLabel);
+      }
+
+      return a.value.localeCompare(b.value);
+    });
   };
 
   useEffect(() => {
@@ -116,7 +126,7 @@ export const Select: React.FC<SelectProps> = ({
 
   const getSingleSelectLabel = () => {
     if (selectedOptions.length > 0) {
-      return selectedOptions[0].label;
+      return getLabelFromOption(selectedOptions[0]);
     }
 
     if (defaultValues.length > 0) {
@@ -124,7 +134,7 @@ export const Select: React.FC<SelectProps> = ({
         defaultValues.includes(option.value),
       );
 
-      return defaultOption ? defaultOption.label : placeholder;
+      return defaultOption ? getLabelFromOption(defaultOption) : placeholder;
     }
 
     return placeholder;
@@ -139,7 +149,7 @@ export const Select: React.FC<SelectProps> = ({
         <span className="text-gray-700 text-nowrap overflow-hidden text-ellipsis">
           {multiple
             ? selectedOptions.length > 0
-              ? selectedOptions.map((opt) => opt.label).join(", ")
+              ? selectedOptions.map((opt) => getLabelFromOption(opt)).join(", ")
               : placeholder
             : getSingleSelectLabel()}
         </span>
@@ -182,14 +192,15 @@ export const Select: React.FC<SelectProps> = ({
               className={`flex items-center group px-4 py-2 cursor-pointer text-gray-700 transition-all duration-300 ease-in-out hover:bg-gray-100 ${
                 isAllSelected ? "bg-gray-200" : ""
               }`}
-              onClick={() =>
-                handleOptionClick({ value: "all", label: "Select All" })
-              }
+              onClick={() => handleOptionClick({ value: "all", label: "" })}
             >
               <Checkbox
                 checked={isAllSelected}
                 onChange={() =>
-                  handleOptionClick({ value: "all", label: "Select All" })
+                  handleOptionClick({
+                    value: "all",
+                    label: "",
+                  })
                 }
                 label={t("Select All")}
               />
