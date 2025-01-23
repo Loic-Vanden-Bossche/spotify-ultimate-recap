@@ -17,9 +17,7 @@ export const ImportButton = () => {
 
   const hiddenFileInput = useRef<HTMLInputElement | null>(null);
 
-  const { uploadStatus, setUploadStatus } = useUploadStatusStore(
-    (state) => state,
-  );
+  const { uploadStatus, setUploadStatus } = useUploadStatusStore();
 
   const handleClick = () => {
     hiddenFileInput.current?.click();

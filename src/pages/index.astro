@@ -120,7 +120,7 @@ if (Astro.url.searchParams.has("s")) {
 ---
 
 <Layout>
-  <LoadWrapper client:load>
+  <LoadWrapper sharedChart={sharedChart} client:load>
     <Home sharedChart={sharedChart} />
   </LoadWrapper>
 </Layout>

@@ -10,6 +10,7 @@ import { DynamicChart } from "../DynamicChart.tsx";
 import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 import type { ReportResponse } from "../../models/report-response.ts";
 import { ChartContainer } from "../ChartContainer.tsx";
+import { useSharedChartStore } from "../store/shared-chart.store.ts";
 
 interface HourlyChartCustomOptions {
   stacked: boolean;
@@ -18,6 +19,8 @@ interface HourlyChartCustomOptions {
 export const HourlyChart = () => {
   const { i18n } = useTranslation();
   const { t } = i18n;
+
+  const sharedChart = useSharedChartStore((state) => state.sharedChart);
 
   const chartId = "hourly";
 
@@ -63,12 +66,14 @@ export const HourlyChart = () => {
 
     let years: string[] = [];
 
-    const historyTagProvider = (historyIdx: number) => {
+    const historyTagProvider = (historyId: string, historyIdx: number) => {
       if (historyIds.length === 1) {
         return "";
       }
 
-      return `${t("History")} ${historyIdx + 1} - `;
+      const isShared = sharedChart && sharedChart.histories.includes(historyId);
+
+      return `${t("History")} ${historyIdx + 1}${isShared ? " - " + t("Shared chart") : ""} - `;
     };
 
     const getYDomain = (data: HourlyData[], idx: number) => {
@@ -98,7 +103,7 @@ export const HourlyChart = () => {
         series.push({
           type: "bar",
           stack: stacked ? `stack` : undefined,
-          name: `${historyTagProvider(idx)}${t("Combined")}`,
+          name: `${historyTagProvider(historyId, idx)}${t("Combined")}`,
           data: getYDomain(combinedData, idx),
         });
       } else {
@@ -143,7 +148,7 @@ export const HourlyChart = () => {
           series.push({
             type: "bar",
             stack: stacked ? `stack_${year}` : undefined,
-            name: `${historyTagProvider(idx)}${year}`,
+            name: `${historyTagProvider(historyId, idx)}${year}`,
             data: getYDomain(yearData, idx),
           });
         });

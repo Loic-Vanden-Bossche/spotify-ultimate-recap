@@ -32,7 +32,7 @@ export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
   const [availableHistories, setAvailableHistories] = useState<History[]>([]);
   const [availableYears, setAvailableYears] = useState<YearData[]>([]);
 
-  const { setSettings, settings } = useSettingsStore((state) => state);
+  const { setSettings, settings } = useSettingsStore();
 
   const [isCombined, setIsCombined] = useState<boolean>(true);
   const [isProportional, setIsProportional] = useState<boolean>(true);

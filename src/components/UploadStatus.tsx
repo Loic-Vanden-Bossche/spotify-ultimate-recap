@@ -2,7 +2,7 @@ import { Loader } from "./Loader.tsx";
 import { useUploadStatusStore } from "./store/upload-status.store.ts";
 
 export const UploadStatus = () => {
-  const { uploadStatus } = useUploadStatusStore((state) => state);
+  const { uploadStatus } = useUploadStatusStore();
 
   return (
     !!uploadStatus && (

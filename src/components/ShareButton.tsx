@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import { ShareIcon } from "./icons/ShareIcon";
 import { useSettingsStore } from "./store/settings.store.ts";
+import { useSharedChartStore } from "./store/shared-chart.store.ts";
 import { chartsRequestBuilder } from "../lib/request-builder.ts";
 
 interface SharedResponse {
@@ -8,7 +9,9 @@ interface SharedResponse {
 }
 
 export const ShareButton: FC = () => {
-  const { settings } = useSettingsStore((state) => state);
+  const { settings } = useSettingsStore();
+  const sharedChart = useSharedChartStore((state) => state.sharedChart);
+
   const share = async () => {
     if (!settings) {
       return;
@@ -38,7 +41,10 @@ export const ShareButton: FC = () => {
   };
 
   return (
-    <button onClick={share} className="">
+    <button
+      onClick={share}
+      className={`${sharedChart ? "opacity-50 pointer-events-none" : ""}`}
+    >
       <ShareIcon />
     </button>
   );
