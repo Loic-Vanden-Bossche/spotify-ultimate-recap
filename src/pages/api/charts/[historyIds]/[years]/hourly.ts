@@ -22,17 +22,24 @@ interface HourlyResponse extends CombinedHourlyResponse {
 export const prerender = false;
 
 export const GET: APIRoute = async ({ params, request }) => {
-  const historyIds = parseUrlHistories(params);
+  const { historyIds, userHistoryIds, sharedChart } =
+    await parseUrlHistories(params);
   const userUUID = await extractUserId(request.headers);
 
-  const error = await checkUserHistories(userUUID, historyIds);
+  const error = await checkUserHistories(userUUID, userHistoryIds);
 
   if (error) {
     return new Response(null, error);
   }
 
-  const { years, allYearsSelected } = parseUrlYears(params);
-  const { isCombined, isProportional } = parseUrlSettings(request.url);
+  const { years, allYearsSelected } = parseUrlYears(
+    params,
+    sharedChart ?? undefined,
+  );
+  const { isCombined, isProportional } = parseUrlSettings(
+    request.url,
+    sharedChart ?? undefined,
+  );
 
   const yearsCondition = allYearsSelected
     ? Prisma.empty

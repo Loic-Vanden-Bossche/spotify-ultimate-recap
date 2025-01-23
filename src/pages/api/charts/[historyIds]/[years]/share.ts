@@ -38,10 +38,10 @@ const buildShareHash = (
 };
 
 export const POST: APIRoute = async ({ params, request }) => {
-  const historyIds = parseUrlHistories(params);
+  const { userHistoryIds } = await parseUrlHistories(params);
   const userUUID = await extractUserId(request.headers);
 
-  const error = await checkUserHistories(userUUID, historyIds);
+  const error = await checkUserHistories(userUUID, userHistoryIds);
 
   if (error) {
     return new Response(null, error);
@@ -51,7 +51,7 @@ export const POST: APIRoute = async ({ params, request }) => {
   const { isCombined, isProportional } = parseUrlSettings(request.url);
 
   const hash = buildShareHash(
-    historyIds,
+    userHistoryIds,
     years,
     isCombined,
     isProportional,
@@ -84,7 +84,7 @@ export const POST: APIRoute = async ({ params, request }) => {
           Prisma.sql`
           SELECT DISTINCT "year"
           FROM "SpotifyYear"
-          WHERE "historyId" = ANY (${historyIds})
+          WHERE "historyId" = ANY (${userHistoryIds})
         `,
         )
         .then((years) => years.map((year) => year.year));
@@ -105,7 +105,7 @@ export const POST: APIRoute = async ({ params, request }) => {
       rawQpSettings: "",
       sharedChartHistories: {
         createMany: {
-          data: historyIds.map((historyId) => ({
+          data: userHistoryIds.map((historyId) => ({
             historyId,
           })),
         },

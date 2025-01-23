@@ -27,8 +27,11 @@
     "upload.timeTaken": "Import completed in {{count}} seconds",
     "tracks_one": "{{count}} track",
     "tracks_other": "{{count}} tracks",
+    "histories_one": "{{count}} history",
+    "histories_other": "{{count}} histories",
     "years_one": "{{count}} year",
     "years_other": "{{count}} years",
-    "Completed": "{{rate}}% completed"
+    "Completed": "{{rate}}% completed",
+    "Shared chart": "Shared chart"
   }
 }

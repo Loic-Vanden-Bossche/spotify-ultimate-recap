@@ -14,6 +14,7 @@ interface SelectProps {
   placeholder?: string;
   multiple?: boolean;
   onChange: (values: string[]) => void;
+  disabledOptions?: boolean;
 }
 
 export const Select: React.FC<SelectProps> = ({
@@ -22,6 +23,7 @@ export const Select: React.FC<SelectProps> = ({
   placeholder = "Select options",
   multiple = false,
   onChange,
+  disabledOptions = false,
 }) => {
   const { i18n } = useTranslation();
   const { t } = i18n;
@@ -210,7 +212,7 @@ export const Select: React.FC<SelectProps> = ({
               key="all"
               className={`flex items-center group px-4 py-2 cursor-pointer text-gray-700 transition-colors duration-300 ease-in-out hover:bg-gray-100 ${
                 isAllSelected ? "bg-gray-200" : ""
-              }`}
+              } ${disabledOptions ? "opacity-50 pointer-events-none" : ""}`}
               onClick={() => handleOptionClick({ value: "all", label: "" })}
             >
               <Checkbox
@@ -235,7 +237,7 @@ export const Select: React.FC<SelectProps> = ({
                 key={option.value}
                 className={`flex items-center group px-4 py-2 cursor-pointer text-gray-700 transition-colors duration-300 ease-in-out hover:bg-gray-100 ${
                   isSelected ? "bg-gray-200" : ""
-                }`}
+                } ${disabledOptions ? "opacity-50 pointer-events-none" : ""}`}
                 onClick={() => handleOptionClick(option)}
               >
                 {multiple ? (

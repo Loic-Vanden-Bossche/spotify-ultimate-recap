@@ -4,10 +4,12 @@ import { ArtistsChart } from "./charts/ArtistsChart";
 import { DailyChart } from "./charts/DailyChart";
 import { TreemapChart } from "./charts/TreemapChart";
 import { ChartsSettings } from "./ChartsSettings";
+
+const sharedChart = Astro.props.sharedChart;
 ---
 
 <div class="p-10 flex flex-col gap-10">
-  <ChartsSettings client:load />
+  <ChartsSettings sharedChart={sharedChart} client:load />
   <HourlyChart client:load />
   <ArtistsChart client:load />
   <DailyChart client:load />

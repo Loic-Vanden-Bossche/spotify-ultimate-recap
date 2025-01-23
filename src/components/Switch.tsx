@@ -4,16 +4,24 @@ interface SwitchProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label: string;
+  disabled?: boolean;
 }
 
-export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label }) => {
+export const Switch: React.FC<SwitchProps> = ({
+  checked,
+  onChange,
+  label,
+  disabled = false,
+}) => {
   const handleToggle = () => {
     onChange(!checked);
   };
 
   return (
     <div
-      className="flex items-center cursor-pointer select-none min-w-0"
+      className={`flex items-center cursor-pointer select-none min-w-0 ${
+        disabled ? "opacity-50 pointer-events-none" : ""
+      }`}
       onClick={handleToggle}
     >
       <div

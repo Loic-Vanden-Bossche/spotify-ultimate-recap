@@ -9,6 +9,7 @@ import { HistoryLabel } from "./HistoryLabel.tsx";
 import { YearLabel } from "./YearLabel.tsx";
 import type { History } from "../models/history.ts";
 import type { YearData } from "../models/year-data.ts";
+import type { SharedChartFullData } from "../models/shared-chart-full-data.ts";
 
 export interface ChartsSettingsData {
   years: string[];
@@ -17,7 +18,11 @@ export interface ChartsSettingsData {
   isProportional: boolean;
 }
 
-export const ChartsSettings: FC = () => {
+interface ChartsSettingsProps {
+  sharedChart: SharedChartFullData | null;
+}
+
+export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
   const { i18n } = useTranslation();
   const { t } = i18n;
 
@@ -49,43 +54,84 @@ export const ChartsSettings: FC = () => {
     return data;
   };
 
-  // set default settings
+  const sharedToHistory = (sharedChart: SharedChartFullData): History => {
+    return {
+      id: `shared-${sharedChart.id}`,
+      yearCount: sharedChart.years.length,
+      trackCount: 0,
+      historyCount: sharedChart.histories.length,
+    };
+  };
+
+  const getDefaultSelectedHistories = (
+    histories: History[],
+    qpSelectedHistory: string | null,
+  ) => {
+    const selectedHistories = histories
+      .filter((history) => qpSelectedHistory?.split(";").includes(history.id))
+      .map((history) => history.id);
+
+    if (sharedChart) {
+      return [sharedToHistory(sharedChart).id, ...selectedHistories];
+    }
+
+    return selectedHistories.length ? selectedHistories : [histories[0].id];
+  };
+
+  const getAvailableHistories = (histories: History[]) => {
+    if (sharedChart) {
+      return [sharedToHistory(sharedChart), ...histories];
+    }
+
+    return histories;
+  };
+
+  const setDefaultSettingsFromQp = (url: URLSearchParams) => {
+    const qpIsCombined = url.get("c");
+    const qpIsProportional = url.get("p");
+
+    const isCombined = qpIsCombined !== "false";
+    const isProportional = qpIsProportional === "true";
+
+    const applySettings = (combined: boolean, proportional: boolean) => {
+      setIsCombined(combined);
+      setIsProportional(proportional);
+    };
+
+    if (sharedChart) {
+      if (sharedChart.isRestricted) {
+        applySettings(sharedChart.isCombined, sharedChart.isProportional);
+      } else {
+        applySettings(
+          qpIsCombined === null ? sharedChart.isCombined : isCombined,
+          qpIsProportional === null
+            ? sharedChart.isProportional
+            : isProportional,
+        );
+      }
+    } else {
+      applySettings(isCombined, isProportional);
+    }
+  };
+
   useEffect(() => {
     const url = new URLSearchParams(window.location.search);
 
     const qpSelectedHistory = url.get("h");
 
-    const qpIsCombined = url.get("c");
-    const qpIsProportional = url.get("p");
-
-    const isCombined = !(qpIsCombined === "false");
-    const isProportional = qpIsProportional === "true";
-
-    setIsCombined(isCombined);
-    setIsProportional(isProportional);
+    setDefaultSettingsFromQp(url);
 
     fetchHistories().then(async (histories) => {
-      setAvailableHistories(histories);
-      const selectedHistories = histories
-        .filter((history) => qpSelectedHistory?.split(";").includes(history.id))
-        .map((history) => history.id);
-
-      const realSelectedHistories = selectedHistories.length
-        ? selectedHistories
-        : [histories[0].id];
-
-      setSelectedHistories(realSelectedHistories);
+      setAvailableHistories(getAvailableHistories(histories));
+      setSelectedHistories(
+        getDefaultSelectedHistories(histories, qpSelectedHistory),
+      );
     });
   }, []);
 
   useEffect(() => {
     if (selectedHistories.length) {
       fetchYears(selectedHistories).then((years) => {
-        const isSameYears =
-          years.every((year) =>
-            availableYears.map((year) => year.year).includes(year.year),
-          ) && availableYears.length === years.length;
-
         setAvailableYears(years);
 
         let realSelectedYears: string[];
@@ -100,7 +146,9 @@ export const ChartsSettings: FC = () => {
 
           realSelectedYears = selectedYears.length
             ? selectedYears
-            : years.map((year) => year.year);
+            : sharedChart
+              ? sharedChart.years.map(String)
+              : years.map((year) => year.year);
 
           setDefaultSettings({
             years: realSelectedYears,
@@ -109,18 +157,24 @@ export const ChartsSettings: FC = () => {
             isProportional,
           });
         } else {
-          realSelectedYears = isSameYears
-            ? settings?.years || []
-            : years.map((year) => year.year);
+          realSelectedYears = settings?.years || [];
 
-          if (!isSameYears) {
-            setDefaultSettings({
-              years: realSelectedYears,
-              historyIds: selectedHistories,
-              isCombined,
-              isProportional,
-            });
-          }
+          // const isSameYears =
+          //   years.every((year) =>
+          //     availableYears.map((year) => year.year).includes(year.year),
+          //   ) && availableYears.length === years.length;
+          // realSelectedYears = isSameYears
+          //   ? settings?.years || []
+          //   : years.map((year) => year.year);
+          //
+          // if (!isSameYears) {
+          //   setDefaultSettings({
+          //     years: realSelectedYears,
+          //     historyIds: selectedHistories,
+          //     isCombined,
+          //     isProportional,
+          //   });
+          // }
         }
 
         const allYearsSelected =
@@ -143,12 +197,34 @@ export const ChartsSettings: FC = () => {
   useEffect(() => {
     if (settings) {
       const url = new URL(window.location.href);
-      const allYearsSelected = settings.years.includes("all");
 
-      if (allYearsSelected) {
-        url.searchParams.delete("y");
+      if (sharedChart) {
+        if (sharedChart.isRestricted) {
+          url.searchParams.delete("y");
+        } else {
+          const settingsSelectedYears = settings.years.filter(
+            (year) => year !== "all",
+          );
+          const allYearsSelected =
+            sharedChart.years.length === settingsSelectedYears.length &&
+            sharedChart.years.every((year) =>
+              settingsSelectedYears.includes(String(year)),
+            );
+
+          if (allYearsSelected) {
+            url.searchParams.delete("y");
+          } else {
+            url.searchParams.set("y", settingsSelectedYears.join(";"));
+          }
+        }
       } else {
-        url.searchParams.set("y", settings.years.join(";"));
+        const allYearsSelected = settings.years.includes("all");
+
+        if (allYearsSelected) {
+          url.searchParams.delete("y");
+        } else {
+          url.searchParams.set("y", settings.years.join(";"));
+        }
       }
 
       if (
@@ -157,16 +233,39 @@ export const ChartsSettings: FC = () => {
       ) {
         url.searchParams.delete("h");
       } else {
-        url.searchParams.set("h", settings.historyIds.join(";"));
+        url.searchParams.set(
+          "h",
+          settings.historyIds
+            .filter((id) => !id.startsWith("shared-"))
+            .join(";"),
+        );
       }
 
-      if (!settings.isCombined) {
+      if (sharedChart) {
+        if (
+          !sharedChart.isRestricted &&
+          sharedChart.isCombined !== settings.isCombined
+        ) {
+          url.searchParams.set("c", settings.isCombined.toString());
+        } else {
+          url.searchParams.delete("c");
+        }
+      } else if (!settings.isCombined) {
         url.searchParams.set("c", "false");
       } else {
         url.searchParams.delete("c");
       }
 
-      if (settings.isProportional) {
+      if (sharedChart) {
+        if (
+          !sharedChart.isRestricted &&
+          sharedChart.isProportional !== settings.isProportional
+        ) {
+          url.searchParams.set("p", settings.isProportional.toString());
+        } else {
+          url.searchParams.delete("p");
+        }
+      } else if (settings.isProportional) {
         url.searchParams.set("p", "true");
       } else {
         url.searchParams.delete("p");
@@ -195,10 +294,18 @@ export const ChartsSettings: FC = () => {
                 multiple={true}
                 defaultValues={defaultSettings?.historyIds}
                 options={availableHistories.map((history, idx) => {
-                  const stringLabel = `${historyLabel} ${idx + 1}`;
+                  const isShared = history.id.startsWith("shared-");
+                  const stringLabel = isShared
+                    ? t("Shared chart")
+                    : `${historyLabel} ${idx + (sharedChart ? 0 : 1)}`;
+
                   return {
                     label: (
-                      <HistoryLabel history={history} name={stringLabel} />
+                      <HistoryLabel
+                        isShared={isShared}
+                        history={history}
+                        name={stringLabel}
+                      />
                     ),
                     stringLabel,
                     value: history.id,
@@ -213,6 +320,7 @@ export const ChartsSettings: FC = () => {
                 }}
               />
               <Select
+                disabledOptions={sharedChart?.isRestricted}
                 multiple={true}
                 defaultValues={defaultSettings?.years}
                 options={availableYears.map((year) => ({
@@ -243,6 +351,7 @@ export const ChartsSettings: FC = () => {
 
             <div className={"flex gap-4 justify-end max-w-full"}>
               <Switch
+                disabled={sharedChart?.isRestricted}
                 checked={isCombined}
                 onChange={(checked) => {
                   if (!settings) {
@@ -259,6 +368,7 @@ export const ChartsSettings: FC = () => {
                 label={t("Combined years")}
               />
               <Switch
+                disabled={sharedChart?.isRestricted}
                 checked={isProportional}
                 onChange={(checked) => {
                   if (!settings) {

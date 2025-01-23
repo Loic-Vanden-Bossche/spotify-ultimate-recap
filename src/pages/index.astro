@@ -13,6 +13,8 @@ import { extractUuid } from "../lib/extract-uuid";
 
 import en from "../locales/en.json";
 import fr from "../locales/fr.json";
+import { getSharedChartFromId } from "../lib/shared-from-id";
+import type { SharedChartFullData } from "../models/shared-chart-full-data.ts";
 
 export const prerender = false;
 
@@ -105,11 +107,21 @@ if (!cookieUUID) {
     `uuid=${userUUID}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=31536000`,
   );
 }
+
+let sharedChart: SharedChartFullData | null = null;
+
+if (Astro.url.searchParams.has("s")) {
+  const s = Astro.url.searchParams.get("s");
+
+  if (s) {
+    sharedChart = await getSharedChartFromId(s);
+  }
+}
 ---
 
 <Layout>
   <LoadWrapper client:load>
-    <Home uuid={userUUID} />
+    <Home sharedChart={sharedChart} />
   </LoadWrapper>
 </Layout>
 
