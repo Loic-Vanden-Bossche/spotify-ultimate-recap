@@ -34,6 +34,7 @@
     "Completed": "{{rate}}% completed",
     "Shared chart": "Shared chart",
     "Already selected in shared chart": "Already selected in shared chart",
-    "The user does not allow you to change chart settings": "The user does not allow you to change chart settings"
+    "The user does not allow you to change chart settings": "The user does not allow you to change chart settings",
+    "No data has been imported. Please upload your Spotify data to view your recap!": "No data has been imported. Please upload your Spotify data to view your recap!"
   }
 }

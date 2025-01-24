@@ -7,6 +7,7 @@ import { AnimatedSwitcher } from "./AnimatedSwitcher.tsx";
 import { Loader } from "./Loader.tsx";
 import { HistoryLabel } from "./HistoryLabel.tsx";
 import { YearLabel } from "./YearLabel.tsx";
+import { useUploadStatusStore } from "./store/upload-status.store.ts";
 import type { History } from "../models/history.ts";
 import type { YearData } from "../models/year-data.ts";
 import type { SharedChartFullData } from "../models/shared-chart-full-data.ts";
@@ -33,6 +34,8 @@ export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
   const [availableYears, setAvailableYears] = useState<YearData[]>([]);
 
   const { setSettings, settings } = useSettingsStore();
+
+  const uploadStatus = useUploadStatusStore((state) => state.uploadStatus);
 
   const [isCombined, setIsCombined] = useState<boolean>(true);
   const [isProportional, setIsProportional] = useState<boolean>(true);
@@ -117,9 +120,9 @@ export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
   useEffect(() => {
     const url = new URLSearchParams(window.location.search);
 
-    const qpSelectedHistory = url.get("h");
-
     setDefaultSettingsFromQp(url);
+
+    const qpSelectedHistory = url.get("h");
 
     fetchHistories().then(async (histories) => {
       setAvailableHistories(getAvailableHistories(histories));
@@ -128,6 +131,33 @@ export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
       );
     });
   }, []);
+
+  useEffect(() => {
+    if (uploadStatus?.status === "complete") {
+      fetchHistories().then(async (histories) => {
+        const newHistories = histories.filter(
+          (history) => !availableHistories.find((h) => h.id === history.id),
+        );
+
+        setAvailableHistories(getAvailableHistories(histories));
+
+        if (settings) {
+          const newSettings = {
+            ...settings,
+            historyIds: Array.from(
+              new Set([
+                ...settings.historyIds,
+                ...newHistories.map((h) => h.id),
+              ]),
+            ),
+          };
+
+          setDefaultSettings(newSettings);
+          setSettings(newSettings);
+        }
+      });
+    }
+  }, [uploadStatus]);
 
   useEffect(() => {
     if (selectedHistories.length) {
@@ -178,7 +208,7 @@ export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
         }
 
         const allYearsSelected =
-          realSelectedYears.length === years.length && years.length > 1;
+          realSelectedYears.length === years.length && years.length >= 1;
 
         if (allYearsSelected) {
           realSelectedYears.push("all");
@@ -220,7 +250,7 @@ export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
       } else {
         const allYearsSelected = settings.years.includes("all");
 
-        if (allYearsSelected) {
+        if (allYearsSelected || !settings.years.length) {
           url.searchParams.delete("y");
         } else {
           url.searchParams.set("y", settings.years.join(";"));
@@ -344,7 +374,7 @@ export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
 
                   const allYearsSelected =
                     availableYears.length === values.length &&
-                    values.length > 1;
+                    values.length >= 1;
 
                   if (allYearsSelected) {
                     values.push("all");

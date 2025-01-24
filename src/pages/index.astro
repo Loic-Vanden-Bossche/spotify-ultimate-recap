@@ -121,7 +121,7 @@ if (Astro.url.searchParams.has("s")) {
 
 <Layout>
   <LoadWrapper sharedChart={sharedChart} client:load>
-    <Home sharedChart={sharedChart} />
+    <Home userId={userUUID} sharedChart={sharedChart} />
   </LoadWrapper>
 </Layout>
 
@@ -132,11 +132,11 @@ if (Astro.url.searchParams.has("s")) {
 
   @layer base {
     @font-face {
-      font-family: "Gotham";
+      font-family: "Poppins";
       font-style: normal;
       font-weight: 400;
       font-display: swap;
-      src: url(/fonts/GothamMedium.ttf) format("woff2");
+      src: url(/fonts/Poppins-Regular.ttf) format("woff2");
     }
   }
 
@@ -150,6 +150,13 @@ if (Astro.url.searchParams.has("s")) {
   .has-tooltip:hover .tooltip {
     opacity: 1;
     visibility: visible;
+  }
+
+  .fatter {
+    color: black;
+    text-shadow: 1px 0 black;
+    letter-spacing: 1px;
+    font-weight: bold;
   }
 </style>
 

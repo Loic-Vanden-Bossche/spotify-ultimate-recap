@@ -118,13 +118,24 @@ export const Select: React.FC<SelectProps> = ({
 
   useEffect(() => {
     if (selectedOptions.length && options.length) {
-      setSelectedOptions(
-        selectedOptions.map((selected) => {
-          return (
-            options.find((opt) => opt.value === selected.value) ?? selected
-          );
-        }),
+      const selectedOptionsHaveDifferentLabels = selectedOptions.some(
+        (selected) =>
+          options.some(
+            (option) =>
+              option.value === selected.value &&
+              option.stringLabel !== selected.stringLabel,
+          ),
       );
+
+      if (selectedOptionsHaveDifferentLabels) {
+        setSelectedOptions(
+          selectedOptions.map((selected) => {
+            return (
+              options.find((opt) => opt.value === selected.value) ?? selected
+            );
+          }),
+        );
+      }
     }
 
     const selectedNotInOptions = selectedOptions.some(
