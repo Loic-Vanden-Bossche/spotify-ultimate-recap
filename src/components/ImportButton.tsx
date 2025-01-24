@@ -152,7 +152,7 @@ export const ImportButton = () => {
   return (
     <>
       <button
-        className={`bg-black text-white px-4 py-2 rounded-md flex items-center justify-center transition-all duration-300 ease-in-out disabled:opacity-80 hover:scale-95 hover:opacity-95`}
+        className={`bg-black text-white px-4 py-2 max-md:px-2 rounded-md flex items-center justify-center transition-all duration-300 ease-in-out disabled:opacity-80 hover:scale-95 hover:opacity-95`}
         onClick={handleClick}
         disabled={uploadStatus?.isLoading}
       >
@@ -166,8 +166,8 @@ export const ImportButton = () => {
           {uploadStatus?.isLoading && <Loader />}
         </span>
         <UploadIcon />
-        <div className="w-3" />
-        <p>{t("Import Spotify data")}</p>
+        <div className="w-3 max-md:hidden" />
+        <p className={"max-md:hidden"}>{t("Import Spotify data")}</p>
       </button>
       <input
         className="hidden"

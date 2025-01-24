@@ -1,11 +1,12 @@
 import React, { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Checkbox } from "./Checkbox.tsx";
+import { SelectItem } from "./SelectItem.tsx";
 
 export interface Option {
   value: string;
   stringLabel?: string;
   label: ReactNode;
+  disabledReason?: string;
 }
 
 interface SelectProps {
@@ -36,8 +37,11 @@ export const Select: React.FC<SelectProps> = ({
   const handleOptionClick = (option: Option) => {
     if (multiple) {
       if (option.value === "all") {
+        const optionsWithoutDisabled = options.filter((o) => !o.disabledReason);
         const newOptions =
-          selectedOptions.length === options.length ? [] : options;
+          selectedOptions.length === optionsWithoutDisabled.length
+            ? []
+            : optionsWithoutDisabled;
         setSelectedOptions(sortOptions(newOptions));
         onChange(newOptions.map((opt) => opt.value));
         return;
@@ -97,6 +101,7 @@ export const Select: React.FC<SelectProps> = ({
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -133,9 +138,17 @@ export const Select: React.FC<SelectProps> = ({
 
       setSelectedOptions(sortOptions(newSelectedOptions));
     }
+
+    const dropdown = dropdownRef?.current?.querySelector("div:nth-child(2)"); // Get the dropdown menu
+    if (dropdown) {
+      const rect = dropdown.getBoundingClientRect();
+      setDefaultBounds(rect);
+    }
   }, [options]);
 
-  const isAllSelected = selectedOptions.length === options.length;
+  const isAllSelected =
+    selectedOptions.length ===
+    options.filter((opt) => !opt.disabledReason).length;
 
   const getSingleSelectLabel = () => {
     if (selectedOptions.length > 0) {
@@ -159,16 +172,52 @@ export const Select: React.FC<SelectProps> = ({
     }
   };
 
+  const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
+  const [defaultBounds, setDefaultBounds] = useState<DOMRect | null>(null);
+
+  const adjustDropdownPosition = () => {
+    if (dropdownRef.current && defaultBounds) {
+      const overflowRight = defaultBounds.right > window.innerWidth;
+
+      const maxRight =
+        defaultBounds.width - (defaultBounds.right - window.innerWidth);
+
+      let overflowLeft = false;
+
+      const dropdown = dropdownRef?.current?.querySelector("div:nth-child(1)"); // Get the dropdown menu
+      if (dropdown) {
+        const rect = dropdown.getBoundingClientRect();
+
+        if (rect.right - defaultBounds.width < 0) {
+          overflowLeft = true;
+        }
+      }
+
+      setDropdownStyles({
+        ...(overflowRight && { right: 0, left: "auto" }), // Shift left if it overflows right
+        ...(overflowLeft && { left: 0 }), // Reset if it overflows left
+        ...(overflowLeft &&
+          overflowRight && { maxWidth: `calc(${maxRight}px - 1rem)` }),
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && isAnimating) {
+      adjustDropdownPosition();
+    }
+  }, [isAnimating]);
+
   useEffect(() => {
     if (isOpen) {
-      setIsAnimating(true); // Start animation
+      setIsAnimating(true); // Start
     }
   }, [isOpen]);
 
   return (
-    <div ref={dropdownRef} className="relative">
+    <div ref={dropdownRef} className="h-full relative">
       <div
-        className="border border-gray-300 rounded-md bg-white shadow-sm px-4 py-2 cursor-pointer flex justify-between items-center hover:border-gray-400"
+        className="border h-full border-gray-300 rounded-md bg-white shadow-sm px-4 py-2 cursor-pointer flex justify-between items-center hover:border-gray-400"
         onClick={() => setIsOpen((prev) => !prev)}
       >
         <span className="text-gray-700 text-nowrap overflow-hidden text-ellipsis">
@@ -197,61 +246,45 @@ export const Select: React.FC<SelectProps> = ({
       </div>
 
       <div
-        className={`absolute mt-2 min-w-full w-max bg-white border border-gray-300 rounded-md shadow-lg z-10 overflow-hidden transform transition-all duration-300 ease-in-out ${
+        style={dropdownStyles}
+        className={`absolute mt-2 min-w-full w-max bg-white border border-gray-300 rounded-md shadow-lg z-10 transform transition-all duration-300 ease-in-out ${
           isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
       >
         <ul
-          className={`transition-all duration-300 ease-in-out ${!isAnimating && isOpen ? "overflow-auto" : "overflow-hidden"} ${
+          className={`transition-all whitespace-nowrap duration-300 ease-in-out ${!isAnimating && isOpen ? "overflow-y-auto" : "overflow-hidden"} ${
             isOpen ? "max-h-60" : "max-h-0"
           }`}
           onTransitionEnd={handleTransitionEnd}
         >
-          {multiple && (
-            <li
-              key="all"
-              className={`flex items-center group px-4 py-2 cursor-pointer text-gray-700 transition-colors duration-300 ease-in-out hover:bg-gray-100 ${
-                isAllSelected ? "bg-gray-200" : ""
-              } ${disabledOptions ? "opacity-50 pointer-events-none" : ""}`}
-              onClick={() => handleOptionClick({ value: "all", label: "" })}
-            >
-              <Checkbox
-                checked={isAllSelected}
-                onChange={() =>
-                  handleOptionClick({
-                    value: "all",
-                    label: "",
-                  })
-                }
-                label={t("Select All")}
+          <div className={dropdownStyles.maxWidth ? "inline-block" : "w-full"}>
+            {multiple && (
+              <SelectItem
+                key="all"
+                option={{ value: "all", label: t("Select All") }}
+                isSelected={isAllSelected}
+                onSelected={handleOptionClick}
+                isMultiple={true}
+                disabledOptions={disabledOptions}
               />
-            </li>
-          )}
-          {options.map((option) => {
-            const isSelected = selectedOptions.some(
-              (selected) => selected.value === option.value,
-            );
+            )}
+            {options.map((option) => {
+              const isSelected = selectedOptions.some(
+                (selected) => selected.value === option.value,
+              );
 
-            return (
-              <li
-                key={option.value}
-                className={`flex items-center group px-4 py-2 cursor-pointer text-gray-700 transition-colors duration-300 ease-in-out hover:bg-gray-100 ${
-                  isSelected ? "bg-gray-200" : ""
-                } ${disabledOptions ? "opacity-50 pointer-events-none" : ""}`}
-                onClick={() => handleOptionClick(option)}
-              >
-                {multiple ? (
-                  <Checkbox
-                    checked={isSelected}
-                    onChange={() => handleOptionClick(option)}
-                    label={option.label}
-                  />
-                ) : (
-                  <span className="w-full text-left">{option.label}</span>
-                )}
-              </li>
-            );
-          })}
+              return (
+                <SelectItem
+                  key={option.value}
+                  option={option}
+                  isSelected={isSelected}
+                  onSelected={handleOptionClick}
+                  isMultiple={multiple}
+                  disabledOptions={disabledOptions}
+                />
+              );
+            })}
+          </div>
         </ul>
       </div>
     </div>

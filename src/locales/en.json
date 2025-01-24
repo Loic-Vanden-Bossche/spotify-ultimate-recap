@@ -32,6 +32,8 @@
     "years_one": "{{count}} year",
     "years_other": "{{count}} years",
     "Completed": "{{rate}}% completed",
-    "Shared chart": "Shared chart"
+    "Shared chart": "Shared chart",
+    "Already selected in shared chart": "Already selected in shared chart",
+    "The user does not allow you to change chart settings": "The user does not allow you to change chart settings"
   }
 }

@@ -32,6 +32,8 @@
     "years_one": "{{count}} an",
     "years_other": "{{count}} années",
     "Completed": "{{rate}}% complété",
-    "Shared chart": "Graphique partagé"
+    "Shared chart": "Graphique partagé",
+    "Already selected in shared chart": "Déjà sélectionné via le graphique partagé",
+    "The user does not allow you to change chart settings": "L'utilisateur ne vous permet pas de modifier les paramètres du graphique"
   }
 }

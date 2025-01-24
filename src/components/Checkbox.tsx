@@ -3,7 +3,7 @@ import React, { type JSX, type ReactNode } from "react";
 interface CheckboxProps {
   label: ReactNode;
   checked?: boolean;
-  onChange: (checked: boolean) => void;
+  onChange?: (checked: boolean) => void;
   icon?: JSX.Element;
 }
 
@@ -14,7 +14,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   icon,
 }) => {
   const handleToggle = () => {
-    onChange(!checked);
+    onChange?.(!checked);
   };
 
   return (

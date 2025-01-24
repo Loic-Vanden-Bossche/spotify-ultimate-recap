@@ -299,6 +299,9 @@ export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
                     ? t("Shared chart")
                     : `${historyLabel} ${idx + (sharedChart ? 0 : 1)}`;
 
+                  const isDisabled =
+                    sharedChart && sharedChart.histories.includes(history.id);
+
                   return {
                     label: (
                       <HistoryLabel
@@ -309,6 +312,9 @@ export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
                     ),
                     stringLabel,
                     value: history.id,
+                    disabledReason: isDisabled
+                      ? t("Already selected in shared chart")
+                      : undefined,
                   };
                 })}
                 onChange={(values) => {
@@ -326,6 +332,9 @@ export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
                 options={availableYears.map((year) => ({
                   label: <YearLabel year={year} />,
                   stringLabel: year.year,
+                  disabledReason: sharedChart?.isRestricted
+                    ? t("The user does not allow you to change chart settings")
+                    : undefined,
                   value: year.year,
                 }))}
                 onChange={(values) => {
@@ -351,7 +360,11 @@ export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
 
             <div className={"flex gap-4 justify-end max-w-full"}>
               <Switch
-                disabled={sharedChart?.isRestricted}
+                disabledMessage={
+                  sharedChart?.isRestricted
+                    ? t("The user does not allow you to change chart settings")
+                    : undefined
+                }
                 checked={isCombined}
                 onChange={(checked) => {
                   if (!settings) {
@@ -368,7 +381,11 @@ export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
                 label={t("Combined years")}
               />
               <Switch
-                disabled={sharedChart?.isRestricted}
+                disabledMessage={
+                  sharedChart?.isRestricted
+                    ? t("The user does not allow you to change chart settings")
+                    : undefined
+                }
                 checked={isProportional}
                 onChange={(checked) => {
                   if (!settings) {

@@ -8,7 +8,7 @@ import { ChartsSettings } from "./ChartsSettings";
 const sharedChart = Astro.props.sharedChart;
 ---
 
-<div class="p-10 flex flex-col gap-10">
+<div class="p-10 max-sm:p-3 flex flex-col gap-10 max-sm:gap-3 overflow-hidden">
   <ChartsSettings sharedChart={sharedChart} client:load />
   <HourlyChart client:load />
   <ArtistsChart client:load />

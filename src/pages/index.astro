@@ -139,6 +139,18 @@ if (Astro.url.searchParams.has("s")) {
       src: url(/fonts/GothamMedium.ttf) format("woff2");
     }
   }
+
+  .tooltip {
+    transition: all 0.3s ease;
+    transform: translateY(0.5rem);
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .has-tooltip:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
 </style>
 
 <script>

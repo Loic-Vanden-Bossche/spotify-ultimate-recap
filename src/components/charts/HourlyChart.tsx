@@ -11,6 +11,7 @@ import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 import type { ReportResponse } from "../../models/report-response.ts";
 import { ChartContainer } from "../ChartContainer.tsx";
 import { useSharedChartStore } from "../store/shared-chart.store.ts";
+import { minutesToHumanReadable } from "../../lib/time-utils.ts";
 
 interface HourlyChartCustomOptions {
   stacked: boolean;
@@ -45,6 +46,10 @@ export const HourlyChart = () => {
     const { isCombined, isProportional } = settings;
     const { stacked } = customOptions || { stacked: false };
 
+    const screenWidth = window.innerWidth;
+
+    const isMobile = screenWidth < 768;
+
     const huesDomain = [
       142, // Green
       277, // Purple
@@ -72,6 +77,10 @@ export const HourlyChart = () => {
       }
 
       const isShared = sharedChart && sharedChart.histories.includes(historyId);
+
+      if (isMobile) {
+        return `H${historyIdx + 1} - `;
+      }
 
       return `${t("History")} ${historyIdx + 1}${isShared ? " - " + t("Shared chart") : ""} - `;
     };
@@ -185,7 +194,7 @@ export const HourlyChart = () => {
             return `${value.toFixed(2)}%`;
           }
 
-          return `${value} minutes`;
+          return minutesToHumanReadable(value);
         },
       },
       xAxis: {
