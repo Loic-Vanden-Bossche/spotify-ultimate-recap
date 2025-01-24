@@ -7,7 +7,13 @@ export const extractUserId = async (
     return null;
   }
 
-  const userUUID = cookies.split("uuid=")[1].split(";")[0];
+  const splitted = cookies.split("uuid=");
+
+  if (splitted.length < 2) {
+    return null;
+  }
+
+  const userUUID = splitted[1].split(";")[0];
 
   if (!userUUID) {
     return null;

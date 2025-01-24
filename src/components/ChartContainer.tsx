@@ -1,5 +1,6 @@
 import React, { type ReactNode, useEffect, useState } from "react";
 import { Switch } from "./Switch.tsx";
+import { useSharedChartStore } from "./store/shared-chart.store.ts";
 
 interface ChartCustomOption<T, K extends keyof T = keyof T> {
   key: keyof T;
@@ -23,6 +24,26 @@ export const ChartContainer = <T,>({
   onCustomOptionChange,
 }: ChartContainerProps<T>) => {
   const [options, setOptions] = useState<T | null>(null);
+  const sharedChart = useSharedChartStore((state) => state.sharedChart);
+
+  const sharedSettings = !sharedChart
+    ? []
+    : sharedChart.rawQpSettings.split(";").map((setting) => {
+        const [key, value] = setting.split("=");
+
+        return {
+          key,
+          value,
+        };
+      });
+
+  const getOptionKey = (optionKey: string) => {
+    return `cco_${chartId}_${optionKey}`;
+  };
+
+  const getSharedSettingOption = (optionKey: string) => {
+    return sharedSettings.find((s) => s.key === optionKey)?.value;
+  };
 
   useEffect(() => {
     if (customOptions) {
@@ -37,7 +58,8 @@ export const ChartContainer = <T,>({
       const qp = new URLSearchParams(window.location.search);
 
       customOptions.forEach((option) => {
-        const value = qp.get(`${chartId}_${option.key as string}`);
+        const optionKey = getOptionKey(option.key as string);
+        const value = qp.get(optionKey) ?? getSharedSettingOption(optionKey);
 
         if (value) {
           if (typeof defaultOptions[option.key] === "boolean") {
@@ -52,7 +74,7 @@ export const ChartContainer = <T,>({
 
       setOptions(defaultOptions);
     }
-  }, []);
+  }, [sharedChart]);
 
   useEffect(() => {
     if (options && onCustomOptionChange) {
@@ -61,22 +83,29 @@ export const ChartContainer = <T,>({
       const qp = new URLSearchParams(window.location.search);
 
       customOptions?.forEach((option) => {
-        const optionKey = `${chartId}_${option.key as string}`;
-        if (options[option.key] !== option.default) {
-          qp.set(optionKey, options[option.key] as string);
-          window.history.replaceState(
-            {},
-            "",
-            `${window.location.pathname}?${qp}`,
-          );
+        const optionKey = getOptionKey(option.key as string);
+
+        const sharedValue = getSharedSettingOption(optionKey);
+
+        if (sharedValue) {
+          if (String(options[option.key]) !== sharedValue) {
+            qp.set(optionKey, options[option.key] as string);
+          } else {
+            qp.delete(optionKey);
+          }
         } else {
-          qp.delete(optionKey);
-          window.history.replaceState(
-            {},
-            "",
-            `${window.location.pathname}?${qp}`,
-          );
+          if (options[option.key] !== option.default) {
+            qp.set(optionKey, options[option.key] as string);
+          } else {
+            qp.delete(optionKey);
+          }
         }
+
+        window.history.replaceState(
+          {},
+          "",
+          `${window.location.pathname}?${qp}`,
+        );
       });
     }
   }, [options]);

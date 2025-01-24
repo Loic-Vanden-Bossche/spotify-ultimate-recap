@@ -17,9 +17,19 @@ export const ShareButton: FC = () => {
       return;
     }
 
+    const currentQp = new URLSearchParams(window.location.search);
+
+    const rawQpSettings = currentQp.keys().reduce((acc, key) => {
+      if (key.startsWith("cco")) {
+        acc = `${acc ? ";" : ""}${key}=${currentQp.get(key)}`;
+      }
+
+      return acc;
+    }, "");
+
     const sharedResponse: SharedResponse = await fetch(
       chartsRequestBuilder(settings, "share"),
-      { method: "POST" },
+      { method: "POST", body: JSON.stringify({ rawQpSettings }) },
     ).then((res) => res.json());
 
     const url = `${window.location.origin}?s=${sharedResponse.sharedChartId}`;

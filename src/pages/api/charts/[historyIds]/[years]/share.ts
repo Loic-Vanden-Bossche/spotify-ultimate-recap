@@ -37,6 +37,10 @@ const buildShareHash = (
   return Buffer.from(hashArray.join(";")).toString("base64");
 };
 
+interface SharePayload {
+  rawQpSettings: string;
+}
+
 export const POST: APIRoute = async ({ params, request }) => {
   const { userHistoryIds } = await parseUrlHistories(params);
   const userUUID = await extractUserId(request.headers);
@@ -50,12 +54,21 @@ export const POST: APIRoute = async ({ params, request }) => {
   const { years, allYearsSelected } = parseUrlYears(params);
   const { isCombined, isProportional } = parseUrlSettings(request.url);
 
+  const payload: SharePayload = await request.json();
+
+  if (payload.rawQpSettings == null) {
+    return new Response(null, {
+      status: 400,
+      statusText: "Bad Request",
+    });
+  }
+
   const hash = buildShareHash(
     userHistoryIds,
     years,
     isCombined,
     isProportional,
-    "",
+    payload.rawQpSettings,
     false,
   );
 
@@ -102,7 +115,7 @@ export const POST: APIRoute = async ({ params, request }) => {
       uniqueHash: hash,
       isProportional,
       isCombined,
-      rawQpSettings: "",
+      rawQpSettings: payload.rawQpSettings,
       sharedChartHistories: {
         createMany: {
           data: userHistoryIds.map((historyId) => ({

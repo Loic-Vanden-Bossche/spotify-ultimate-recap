@@ -13,6 +13,7 @@ export const getSharedChartFromId = async (
                "SharedChart"."isCombined",
                "SharedChart"."isProportional",
                "SharedChart"."chart",
+               "SharedChart"."rawQpSettings",
                ARRAY_AGG(DISTINCT SCH."historyId") AS "histories",
                ARRAY_AGG(DISTINCT SCY."year") AS "years"
         FROM "SharedChart"

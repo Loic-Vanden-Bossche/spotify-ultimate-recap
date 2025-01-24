@@ -6,4 +6,5 @@ export interface SharedChartFullData {
   chart?: string;
   histories: string[];
   years: number[];
+  rawQpSettings: string;
 }
