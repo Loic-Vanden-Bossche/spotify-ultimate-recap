@@ -221,6 +221,11 @@ export const ChartsSettings: FC<ChartsSettingsProps> = ({ sharedChart }) => {
           isProportional,
         });
       });
+    } else if (settings) {
+      setSettings({
+        ...settings,
+        historyIds: [],
+      });
     }
   }, [selectedHistories]);
 

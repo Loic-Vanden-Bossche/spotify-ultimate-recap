@@ -34,8 +34,20 @@ export const DynamicChart = <T, K>({
 
   const settings = useSettingsStore((state) => state.settings);
 
+  const fetchDataFromSettings = async (settings: ChartsSettingsData) => {
+    if (
+      settings &&
+      settings.historyIds.length > 0 &&
+      settings.years.length > 0
+    ) {
+      return fetchData(settings);
+    }
+
+    return { data: {} } as T;
+  };
+
   const fetchChartData = async (settings: ChartsSettingsData) => {
-    const fetchedData = await fetchData(settings);
+    const fetchedData = await fetchDataFromSettings(settings);
 
     setFetchedData(fetchedData);
 
