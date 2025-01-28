@@ -117,7 +117,7 @@ export const ChartContainer = <T,>({
         {customOptions && (
           <div className={"min-w-0"}>
             {customOptions.map((option, i) => {
-              const value = options?.[option.key] || option.default;
+              const value = options?.[option.key] ?? option.default;
 
               if (typeof value === "boolean") {
                 return (

@@ -1,28 +1,95 @@
+import type { EChartsOption } from "echarts/types/dist/echarts";
+import { useTranslation } from "react-i18next";
+import { useState } from "react";
 import { type ReactEChartsProps } from "../ReactECharts.tsx";
 import type { ArtistsData } from "../../models/artists-data.ts";
 import { DynamicChart } from "../DynamicChart.tsx";
 import { ChartContainer } from "../ChartContainer.tsx";
+import type { ChartsSettingsData } from "../ChartsSettings.tsx";
+import { chartsRequestBuilder } from "../../lib/request-builder.ts";
+import type { ReportResponse } from "../../models/report-response.ts";
+import { getYDomain } from "../../lib/charts.ts";
+import { useSharedChartStore } from "../store/shared-chart.store.ts";
+
+interface ArtistsChartCustomOptions {
+  stacked: boolean;
+}
 
 export const ArtistsChart = () => {
+  const { i18n } = useTranslation();
+  const { t } = i18n;
+
+  const [customOptions, setCustomOptions] = useState<ArtistsChartCustomOptions>(
+    {
+      stacked: false,
+    },
+  );
+
+  const sharedChart = useSharedChartStore((state) => state.sharedChart);
+
   const chartId = "artists";
 
-  const fetchData = async () => {
-    const historyId = "893f5b4f-0ce5-4828-bfa2-e48cb56d3020";
-
-    const data: ArtistsData[] = await fetch(
-      `/api/charts/${historyId}/${chartId}`,
+  const fetchData = async (settings: ChartsSettingsData) => {
+    const response: ReportResponse<ArtistsData[]> = await fetch(
+      chartsRequestBuilder(settings, chartId),
     ).then((res) => res.json());
 
-    return data;
+    return response;
   };
 
   const getChartOptions = (
-    data: ArtistsData[],
+    response: ReportResponse<ArtistsData[]>,
+    settings: ChartsSettingsData,
+    customOptions?: ArtistsChartCustomOptions,
   ): ReactEChartsProps["option"] => {
-    const xDomain = data.map((artistsData) => artistsData.totalMinutes);
-    const yDomain = data.map((artistsData) => artistsData.artistName);
+    const { data } = response;
+    // const { isCombined, isProportional } = settings;
+    const { stacked } = customOptions || { stacked: false };
 
-    const baseHue = 142;
+    const historyIds = Object.keys(data);
+
+    const screenWidth = window.innerWidth;
+
+    const isMobile = screenWidth < 768;
+
+    const artistTotals: Record<string, number> = {};
+    historyIds.forEach((id) => {
+      data[id].combined.forEach(({ artistName, value }) => {
+        artistTotals[artistName] = (artistTotals[artistName] || 0) + value;
+      });
+    });
+
+    const historyTagProvider = (historyId: string, historyIdx: number) => {
+      if (historyIds.length === 1) {
+        return "";
+      }
+
+      const isShared = sharedChart && sharedChart.histories.includes(historyId);
+
+      if (isMobile) {
+        return `H${historyIdx + 1} - `;
+      }
+
+      return `${t("History")} ${historyIdx + 1}${isShared ? " - " + t("Shared chart") : ""} - `;
+    };
+
+    const allArtists = Object.keys(artistTotals).sort(
+      (a, b) => artistTotals[a] - artistTotals[b],
+    );
+
+    const series: EChartsOption["series"] = historyIds.map((id, idx) => ({
+      name: `${historyTagProvider(id, idx)}${t("Combined")}`,
+      type: "bar",
+      stack: stacked ? `stack` : undefined,
+      data: getYDomain(
+        allArtists.map(
+          (artist) =>
+            data[id].combined.find((entry) => entry.artistName === artist)
+              ?.value || 0,
+        ),
+        idx,
+      ),
+    }));
 
     return {
       backgroundColor: "transparent",
@@ -53,9 +120,9 @@ export const ArtistsChart = () => {
         nameGap: 30,
       },
       yAxis: {
-        type: "category",
         name: "Artistes",
-        data: yDomain,
+        type: "category",
+        data: allArtists,
         nameLocation: "middle",
         nameGap: 90,
         axisLabel: {
@@ -67,27 +134,29 @@ export const ArtistsChart = () => {
           },
         },
       },
-      series: [
-        {
-          type: "bar",
-          data: xDomain.map((value) => {
-            const lightness = 30 + (value / Math.max(...xDomain)) * 40;
-            return {
-              value: value,
-              itemStyle: {
-                color: `hsl(${baseHue}, 70%, ${lightness}%)`,
-              },
-            };
-          }),
-        },
-      ],
+      series: series,
     };
   };
 
   return (
-    <ChartContainer chartId={chartId} title={"Top 15 des artistes écoutés"}>
+    <ChartContainer
+      chartId={chartId}
+      title={"Top 15 des artistes écoutés"}
+      customOptions={[
+        {
+          key: "stacked",
+          default: true,
+          label: t("Show stacked data"),
+        },
+      ]}
+      onCustomOptionChange={(options) => setCustomOptions(options)}
+    >
       <div className={"h-[500px]"}>
-        <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
+        <DynamicChart
+          customOptions={customOptions}
+          fetchData={fetchData}
+          getChartOptions={getChartOptions}
+        />
       </div>
     </ChartContainer>
   );

@@ -12,6 +12,7 @@ import type { ReportResponse } from "../../models/report-response.ts";
 import { ChartContainer } from "../ChartContainer.tsx";
 import { useSharedChartStore } from "../store/shared-chart.store.ts";
 import { minutesToHumanReadable } from "../../lib/time-utils.ts";
+import { getYDomain } from "../../lib/charts.ts";
 
 interface HourlyChartCustomOptions {
   stacked: boolean;
@@ -50,19 +51,6 @@ export const HourlyChart = () => {
 
     const isMobile = screenWidth < 768;
 
-    const huesDomain = [
-      142, // Green
-      277, // Purple
-      0, // Red
-      60, // Orange
-      200, // Blue
-      40, // Yellow
-      90, // Green
-      320, // Purple
-      20, // Red
-      80, // Orange
-    ];
-
     const historyIds = Object.keys(data);
     let xDomain: string[] = [];
     const series: EChartsOption["series"] = [];
@@ -85,21 +73,6 @@ export const HourlyChart = () => {
       return `${t("History")} ${historyIdx + 1}${isShared ? " - " + t("Shared chart") : ""} - `;
     };
 
-    const getYDomain = (data: HourlyData[], idx: number) => {
-      const processedData = data.map((hourlyData) => hourlyData.value);
-
-      return processedData.map((value) => {
-        const hueIndex = huesDomain[idx % huesDomain.length];
-        const lightness = 30 + (value / Math.max(...processedData)) * 40;
-        return {
-          value,
-          itemStyle: {
-            color: `hsl(${hueIndex}, 70%, ${lightness}%)`,
-          },
-        };
-      });
-    };
-
     historyIds.forEach((historyId, idx) => {
       if (isCombined) {
         const combinedData = data[historyId]?.combined || [];
@@ -113,7 +86,10 @@ export const HourlyChart = () => {
           type: "bar",
           stack: stacked ? `stack` : undefined,
           name: `${historyTagProvider(historyId, idx)}${t("Combined")}`,
-          data: getYDomain(combinedData, idx),
+          data: getYDomain(
+            combinedData.map((h) => h.value),
+            idx,
+          ),
         });
       } else {
         const historyYears = Object.keys(data[historyId]).filter(
@@ -158,7 +134,10 @@ export const HourlyChart = () => {
             type: "bar",
             stack: stacked ? `stack_${year}` : undefined,
             name: `${historyTagProvider(historyId, idx)}${year}`,
-            data: getYDomain(yearData, idx),
+            data: getYDomain(
+              yearData.map((h) => h.value),
+              idx,
+            ),
           });
         });
       });
