@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { waitOneSecond } from "./time-utils.ts";
 import { prisma } from "./prisma.ts";
 import type { JSONFile } from "../models/json-file.ts";
@@ -19,6 +20,8 @@ export const processImportData = async (
       id: true,
     },
   });
+
+  const startTime = new Date();
 
   await prisma.$transaction(
     async (tx) => {
@@ -58,8 +61,6 @@ export const processImportData = async (
       });
 
       progress("upload.importing", mergedJsonFiles.length);
-
-      const startTime = new Date();
 
       const uniqueYears = Array.from(
         new Set(
@@ -135,14 +136,18 @@ export const processImportData = async (
           };
         }),
       });
-
-      const endTime = new Date();
-      const duration = endTime.getTime() - startTime.getTime();
-
-      progress("upload.timeTaken", duration / 1000);
     },
     {
       timeout: 10 * 60 * 1000,
     },
   );
+
+  await prisma.$executeRaw(
+    Prisma.sql`REFRESH MATERIALIZED VIEW CONCURRENTLY "SpotifyAggregated"`,
+  );
+
+  const endTime = new Date();
+  const duration = endTime.getTime() - startTime.getTime();
+
+  progress("upload.timeTaken", duration / 1000);
 };

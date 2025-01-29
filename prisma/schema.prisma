@@ -63,6 +63,12 @@ model SpotifyTrack {
   jsonSourceFileName String
   year               Int
   spotifyYear        SpotifyYear    @relation(fields: [year, historyId], references: [year, historyId])
+
+  @@index([historyId])
+  @@index([year])
+  @@index([year, historyId])
+  @@index([artistName])
+  @@index([msPlayed])
 }
 
 model SharedChart {

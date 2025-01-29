@@ -17,6 +17,13 @@ interface CombinedArtistsResponse {
   historyId: string;
 }
 
+interface ArtistsResponse {
+  artistName: string;
+  value: number;
+  historyId: string;
+  year: number;
+}
+
 export const GET: APIRoute = async ({ params, request }) => {
   const { historyIds, userHistoryIds, sharedChart } =
     await parseUrlHistories(params);
@@ -32,7 +39,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     params,
     sharedChart ?? undefined,
   );
-  const { isProportional } = parseUrlSettings(
+  const { isProportional, isCombined } = parseUrlSettings(
     request.url,
     sharedChart ?? undefined,
   );
@@ -41,69 +48,102 @@ export const GET: APIRoute = async ({ params, request }) => {
     ? Prisma.empty
     : Prisma.sql`AND "year" = ANY (${years})`;
 
-  const valueSelect = isProportional
-    ? Prisma.sql`CAST(CAST(SUM("msPlayed") AS INTEGER) * 100.0 / h."totalMsPlayed" AS FLOAT)`
-    : Prisma.sql`(CAST(SUM(t."msPlayed") / 60000 AS INTEGER))`;
-
   const getData = async (): Promise<ReportResponse<ArtistsData[]>> => {
-    const queryResult = await prisma.$queryRaw<CombinedArtistsResponse[]>(
-      Prisma.sql`
-          WITH TopArtists AS (
-              SELECT "historyId",
-                     "artistName",
-                     SUM("msPlayed") AS "msPlayed",
-                     ROW_NUMBER() OVER (PARTITION BY "historyId" ORDER BY SUM("msPlayed") DESC) AS "rank"
-              FROM "SpotifyTrack"
-              WHERE "historyId" = ANY (${historyIds}) ${yearsCondition}
-              GROUP BY "historyId", "artistName"
-              HAVING SUM("msPlayed") > 0
-          ),
-               AllTopArtists AS (
-                   SELECT DISTINCT "artistName"
-                   FROM TopArtists
-                   WHERE "rank" <= 15
-               ),
-               HistoryTotals AS (
-                   SELECT "historyId",
-                          SUM("msPlayed") AS "totalMsPlayed"
-                   FROM "SpotifyTrack"
-                   WHERE "historyId" = ANY (${historyIds}) ${yearsCondition}
-                   GROUP BY "historyId"
-               ),
-               CombinedArtists AS (
-                   SELECT t."historyId",
-                          t."artistName",
-                          ${valueSelect} AS "value"
-                   FROM "SpotifyTrack" t
-                            JOIN HistoryTotals h ON t."historyId" = h."historyId"
-                   WHERE t."historyId" = ANY (${historyIds}) ${yearsCondition}
-      AND t."artistName" IN (SELECT "artistName" FROM AllTopArtists)
-                   GROUP BY t."historyId", t."artistName", h."totalMsPlayed"
-               )
-          SELECT *
-          FROM CombinedArtists
-          ORDER BY "historyId", "value" DESC
-      `,
-    );
+    if (isCombined) {
+      const valueSelect = isProportional
+        ? Prisma.sql`CAST(CAST(SUM(a."msPlayed") AS INTEGER) * 100.0 / SUM(a."totalMsPlayed") AS FLOAT)`
+        : Prisma.sql`CAST(SUM(a."msPlayed" / 60000) AS INTEGER)`;
 
-    const result: ReportResponse<ArtistsData[]> = {
-      data: {},
-    };
+      const queryResult = await prisma.$queryRaw<CombinedArtistsResponse[]>(
+        Prisma.sql`
+            WITH RankedArtists AS (
+                SELECT "historyId",
+                       "artistName",
+                       SUM("msPlayed") AS "msPlayed",
+                       SUM("totalMsPlayed") AS "totalMsPlayed",
+                       ROW_NUMBER() OVER (PARTITION BY "historyId" ORDER BY SUM("msPlayed") DESC) AS "rank"
+                FROM "SpotifyAggregated"
+                WHERE "historyId" = ANY (${historyIds}) ${yearsCondition}
+          AND "msPlayed" > 0
+                GROUP BY "historyId", "artistName"
+            ),
+                 AllTopArtists AS (
+                     SELECT DISTINCT "artistName"
+                     FROM RankedArtists
+                     WHERE "rank" <= 15
+                 ),
+                 CombinedArtists AS (
+                     SELECT a."historyId",
+                            a."artistName",
+                            ${valueSelect} AS "value"
+                     FROM "SpotifyAggregated" a
+                     WHERE a."historyId" = ANY (${historyIds}) ${yearsCondition}
+          AND a."artistName" IN (SELECT "artistName" FROM AllTopArtists)
+                     GROUP BY a."historyId", a."artistName"
+                 )
+            SELECT *
+            FROM CombinedArtists
+            ORDER BY "historyId", "value" DESC;
+        `,
+      );
 
-    queryResult.forEach((artistData) => {
-      if (!result.data[artistData.historyId]) {
-        result.data[artistData.historyId] = {
-          combined: [],
-        };
-      }
+      const result: ReportResponse<ArtistsData[]> = {
+        data: {},
+      };
 
-      result.data[artistData.historyId].combined.push({
-        artistName: artistData.artistName,
-        value: artistData.value,
+      queryResult.forEach((artistData) => {
+        if (!result.data[artistData.historyId]) {
+          result.data[artistData.historyId] = {
+            combined: [],
+          };
+        }
+
+        result.data[artistData.historyId].combined.push({
+          artistName: artistData.artistName,
+          value: artistData.value,
+        });
       });
-    });
 
-    return result;
+      return result;
+    } else {
+      const valueSelect = isProportional
+        ? Prisma.sql`CAST(CAST(a."msPlayed" AS INTEGER) * 100.0 / a."totalMsPlayed" AS FLOAT)`
+        : Prisma.sql`CAST(a."msPlayed" / 60000 AS INTEGER)`;
+
+      const queryResult = await prisma.$queryRaw<ArtistsResponse[]>(
+        Prisma.sql`
+            SELECT a."historyId",
+                   a."artistName",
+                   a."year",
+                   ${valueSelect} AS "value"
+            FROM "SpotifyAggregated" a
+            WHERE a."historyId" = ANY (${historyIds}) ${yearsCondition}
+      AND a."rank" <= 15
+            ORDER BY a."historyId", a."year", "value" DESC;
+        `,
+      );
+
+      const result: ReportResponse<ArtistsData[]> = {
+        data: {},
+      };
+
+      queryResult.forEach((hourlyData) => {
+        if (!result.data[hourlyData.historyId]) {
+          result.data[hourlyData.historyId] = {};
+        }
+
+        if (!result.data[hourlyData.historyId][hourlyData.year]) {
+          result.data[hourlyData.historyId][hourlyData.year] = [];
+        }
+
+        result.data[hourlyData.historyId][hourlyData.year].push({
+          artistName: hourlyData.artistName,
+          value: hourlyData.value,
+        });
+      });
+
+      return result;
+    }
   };
 
   return new Response(JSON.stringify(await getData()), {
