@@ -11,3 +11,14 @@ export const minutesToHumanReadable = (minutes: number) => {
 
   return `${hours}h`;
 };
+
+export const formatHour = (hour: number, locale: string): string => {
+  if (locale === "en") {
+    const period = hour >= 12 ? "pm" : "am";
+    const convertedHour = hour % 12 === 0 ? 12 : hour % 12;
+
+    return `${convertedHour} ${period}`;
+  } else {
+    return `${hour}h`;
+  }
+};

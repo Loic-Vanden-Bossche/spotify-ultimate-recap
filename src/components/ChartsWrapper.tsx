@@ -48,8 +48,8 @@ export const ChartsWrapper: FC<ReactChartsWrapper> = ({
   return (
     <div className="p-10 max-sm:p-3 flex flex-col gap-10 max-sm:gap-3 overflow-hidden">
       <ChartsSettings sharedChart={sharedChart} />
-      <HourlyChart />
       <ArtistsChart />
+      <HourlyChart />
       <DailyChart />
       <TreemapChart />
     </div>

@@ -11,7 +11,7 @@ import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 import type { ReportResponse } from "../../models/report-response.ts";
 import { ChartContainer } from "../ChartContainer.tsx";
 import { useSharedChartStore } from "../store/shared-chart.store.ts";
-import { minutesToHumanReadable } from "../../lib/time-utils.ts";
+import { formatHour, minutesToHumanReadable } from "../../lib/time-utils.ts";
 import { getYDomain } from "../../lib/charts.ts";
 
 interface HourlyChartCustomOptions {
@@ -77,7 +77,7 @@ export const HourlyChart = () => {
       if (isCombined) {
         const combinedData = data[historyId]?.combined || [];
         const xDomainForHistory = combinedData.map(
-          (hourlyData) => hourlyData.hourOfDay + "h",
+          (hourlyData) => hourlyData.hourOfDay,
         );
 
         xDomain = [...new Set([...xDomain, ...xDomainForHistory])];
@@ -103,15 +103,13 @@ export const HourlyChart = () => {
         historyYears.forEach((year) => {
           const yearData = data[historyId][year] || [];
           const xDomainForYear = yearData.map(
-            (hourlyData) => hourlyData.hourOfDay + "h",
+            (hourlyData) => hourlyData.hourOfDay,
           );
 
           xDomain = [...new Set([...xDomain, ...xDomainForYear])];
         });
       }
     });
-
-    xDomain.sort((a, b) => parseInt(a) - parseInt(b));
 
     const getYLabel = () => {
       if (!isCombined && isProportional) {
@@ -179,7 +177,10 @@ export const HourlyChart = () => {
       xAxis: {
         name: t("Time of day"),
         type: "category",
-        data: xDomain,
+        data: xDomain
+          .map((x) => parseInt(x))
+          .sort((a, b) => a - b)
+          .map((x) => formatHour(x, i18n.language)),
         nameLocation: "middle",
         nameGap: 30,
       },

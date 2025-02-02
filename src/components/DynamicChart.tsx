@@ -6,12 +6,16 @@ import { useSettingsStore } from "./store/settings.store.ts";
 import type { ChartsSettingsData } from "./ChartsSettings.tsx";
 import { ReactECharts, type ReactEChartsProps } from "./ReactECharts.tsx";
 
+export type DynamicOptions =
+  | ReactEChartsProps["option"]
+  | ReactEChartsProps["option"][];
+
 interface DynamicChartProps<T, K> {
   getChartOptions: (
     data: T,
     settings: ChartsSettingsData,
     customOptions?: K,
-  ) => ReactEChartsProps["option"];
+  ) => DynamicOptions;
   fetchData: (settings: ChartsSettingsData) => Promise<T>;
   customOptions?: K;
 }
@@ -24,9 +28,7 @@ export const DynamicChart = <T, K>({
   const [isVisible, setIsVisible] = useState(false);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [fetchedData, setFetchedData] = useState<T | null>(null);
-  const [option, setOption] = useState<ReactEChartsProps["option"] | null>(
-    null,
-  );
+  const [option, setOption] = useState<DynamicOptions | null>(null);
   const chartRef = useRef(null);
 
   const { i18n } = useTranslation();
@@ -102,6 +104,24 @@ export const DynamicChart = <T, K>({
     }
   }, [isVisible, isDataLoaded, fetchData]);
 
+  const getChartsRenderer = () => {
+    if (option) {
+      if (Array.isArray(option)) {
+        return (
+          <div className={"h-full flex flex-col"}>
+            {option.map((opt, index) => (
+              <ReactECharts key={index} option={opt} theme="dark" />
+            ))}
+          </div>
+        );
+      }
+
+      return <ReactECharts option={option} theme="dark" />;
+    }
+
+    return null;
+  };
+
   return (
     <div ref={chartRef} className={"h-full"}>
       <AnimatedSwitcher
@@ -110,7 +130,7 @@ export const DynamicChart = <T, K>({
             <Loader size={60} />
           </div>
         }
-        second={option && <ReactECharts option={option} theme="dark" />}
+        second={getChartsRenderer()}
         isFirstActive={!isVisible || !isDataLoaded}
       />
     </div>
