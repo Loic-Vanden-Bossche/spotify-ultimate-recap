@@ -2,7 +2,6 @@ import { type FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HourlyChart } from "./charts/HourlyChart";
 import { ArtistsChart } from "./charts/ArtistsChart";
-import { DailyChart } from "./charts/DailyChart";
 import { TreemapChart } from "./charts/TreemapChart";
 import { ChartsSettings } from "./ChartsSettings";
 import { ImportButton } from "./ImportButton.tsx";
@@ -48,10 +47,10 @@ export const ChartsWrapper: FC<ReactChartsWrapper> = ({
   return (
     <div className="p-10 max-sm:p-3 flex flex-col gap-10 max-sm:gap-3 overflow-hidden">
       <ChartsSettings sharedChart={sharedChart} />
+      <TreemapChart />
       <ArtistsChart />
       <HourlyChart />
-      <DailyChart />
-      <TreemapChart />
+      {/*<DailyChart />*/}
     </div>
   );
 };

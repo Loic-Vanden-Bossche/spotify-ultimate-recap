@@ -1,8 +1,11 @@
 import * as echarts from "echarts";
+import type { TreemapSeriesLevelOption } from "echarts/types/src/chart/treemap/TreemapSeries.js";
 import { type ReactEChartsProps } from "../ReactECharts.tsx";
 import { DynamicChart } from "../DynamicChart.tsx";
 import { minutesToHumanReadable } from "../../lib/time-utils.ts";
 import { ChartContainer } from "../ChartContainer.tsx";
+import type { ChartsSettingsData } from "../ChartsSettings.tsx";
+import { chartsRequestBuilder } from "../../lib/request-builder.ts";
 
 interface TreemapData {
   name: string;
@@ -13,13 +16,12 @@ interface TreemapData {
 export const TreemapChart = () => {
   const chartId = "track-tree";
 
-  const fetchData = async () => {
-    const historyId = "017562ec-65fa-455d-bf10-cea07878cebb";
-    const data: TreemapData[] = await fetch(
-      `/api/charts/${historyId}/${chartId}`,
+  const fetchData = async (settings: ChartsSettingsData) => {
+    const response: TreemapData[] = await fetch(
+      chartsRequestBuilder(settings, chartId),
     ).then((res) => res.json());
 
-    return data;
+    return response;
   };
 
   const getChartOptions = (
@@ -27,26 +29,43 @@ export const TreemapChart = () => {
   ): ReactEChartsProps["option"] => {
     const formatUtil = echarts.format;
 
-    const getLevelOption = () => [
+    const getLevelOption = (): TreemapSeriesLevelOption[] => [
       {
         itemStyle: {
           borderWidth: 3,
           gapWidth: 5,
-          borderColor: "black",
+          borderColor: "green",
+        },
+        upperLabel: {
+          show: false,
         },
       },
       {
         itemStyle: {
           borderWidth: 1,
           gapWidth: 2,
-          borderColor: "white",
+          borderColor: "blue",
         },
       },
       {
         itemStyle: {
           borderWidth: 1,
           gapWidth: 1,
-          borderColor: "black",
+          borderColor: "orange",
+        },
+      },
+      {
+        itemStyle: {
+          borderWidth: 1,
+          gapWidth: 1,
+          borderColor: "pink",
+        },
+      },
+      {
+        itemStyle: {
+          borderWidth: 1,
+          gapWidth: 1,
+          borderColor: "purple",
         },
       },
     ];
@@ -65,13 +84,9 @@ export const TreemapChart = () => {
         top: 0,
       },
       tooltip: {
-        backgroundColor: "black",
         borderWidth: 2,
         padding: 10,
         borderRadius: 10,
-        textStyle: {
-          color: "white",
-        },
 
         formatter: (params) => {
           const info = params as unknown as {
@@ -123,6 +138,10 @@ export const TreemapChart = () => {
           label: {
             show: true,
             formatter: "{b}",
+          },
+          upperLabel: {
+            show: true,
+            height: 30,
           },
           itemStyle: {
             borderColor: "#fff",
