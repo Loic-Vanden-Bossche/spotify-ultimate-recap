@@ -26,8 +26,11 @@ export const TreemapChart = () => {
 
   const getChartOptions = (
     data: TreemapData[],
+    settings: ChartsSettingsData,
   ): ReactEChartsProps["option"] => {
     const formatUtil = echarts.format;
+
+    const { isProportional } = settings;
 
     const getLevelOption = (): TreemapSeriesLevelOption[] => [
       {
@@ -70,10 +73,13 @@ export const TreemapChart = () => {
       },
     ];
 
-    const top15Artists = data.sort((a, b) => b.value - a.value).slice(0, 15);
-    const avgArtistPlaytime =
-      top15Artists.reduce((acc, artist) => acc + artist.value, 0) /
-      top15Artists.length;
+    const format = (value: number) => {
+      if (isProportional) {
+        return `${value.toFixed(2)}%`;
+      }
+
+      return minutesToHumanReadable(value);
+    };
 
     return {
       backgroundColor: "transparent",
@@ -110,31 +116,15 @@ export const TreemapChart = () => {
                ${title}
             </h1>
 
-            <div class="h-2"> </div>
-            <div class="flex flex-nowrap gap-2 items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="size-6"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-              </svg>
-              <span class="font-bold"> ${minutesToHumanReadable(value)} </span>
-            </div>
+            <div class="h-2"/> </div>
+            <span class="font-bold"> ${format(value)} </span>
           `;
         },
       },
       series: [
         {
           type: "treemap",
-          visibleMin: avgArtistPlaytime,
+          visibleMin: 5000,
           label: {
             show: true,
             formatter: "{b}",

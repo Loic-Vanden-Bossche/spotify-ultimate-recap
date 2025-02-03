@@ -37,6 +37,15 @@ export default tseslint.config(
       "import/no-named-as-default": 0,
       "import/default": 0,
       "import/namespace": 0,
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn", // or "error"
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
     },
   },
 );
