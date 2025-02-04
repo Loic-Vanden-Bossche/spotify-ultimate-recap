@@ -88,6 +88,7 @@ const fetchTrackStatistics = async (
   const yearMap = new Map<string, TreemapNode>();
   const artistMap = new Map<string, TreemapNode>();
   const albumMap = new Map<string, TreemapNode>();
+  const trackMap = new Map<string, TreemapNode>();
 
   const ratePerTrack = 100 / result.length;
 
@@ -132,6 +133,9 @@ const fetchTrackStatistics = async (
       totalMinutesPlayed,
     );
 
+    const trackKey = `${historyId}-${realYear}-${artist}-${album}-${track}`;
+    const hasTrackNode = trackMap.has(trackKey);
+
     const albumNode = getOrCreateNode(
       albumMap,
       artistNode.children!,
@@ -140,41 +144,23 @@ const fetchTrackStatistics = async (
       isProportional,
       isCombined ? proportionPerArtist : proportionPerArtistYear,
       totalMinutesPlayed,
-      !isCombined,
+      !isCombined || !hasTrackNode,
     );
 
-    if (isCombined) {
-      const trackNode = albumNode.children!.find((node) => node.name === track);
+    const trackNode = getOrCreateNode(
+      trackMap,
+      albumNode.children!,
+      trackKey,
+      track,
+      isProportional,
+      isCombined ? proportionPerAlbumArtist : proportionPerAlbumArtistYear,
+      totalMinutesPlayed,
+      !isCombined || !hasTrackNode,
+    );
 
-      if (trackNode) {
-        if (!isProportional) {
-          trackNode.value += totalMinutesPlayed;
-
-          albumNode.value += totalMinutesPlayed;
-        }
-      } else {
-        albumNode.value += isProportional
-          ? proportionPerArtist
-          : totalMinutesPlayed;
-
-        albumNode.children!.push({
-          name: track,
-          value: isProportional
-            ? isCombined
-              ? proportionPerAlbumArtist
-              : proportionPerAlbumArtistYear
-            : totalMinutesPlayed,
-        });
-      }
-    } else {
-      albumNode.children!.push({
-        name: track,
-        value: isProportional
-          ? isCombined
-            ? proportionPerAlbumArtist
-            : proportionPerAlbumArtistYear
-          : totalMinutesPlayed,
-      });
+    if (isCombined && hasTrackNode && !isProportional) {
+      trackNode.value += totalMinutesPlayed;
+      albumNode.value += totalMinutesPlayed;
     }
   });
 
