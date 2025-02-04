@@ -55,6 +55,8 @@ export const ArtistsChart = () => {
 
     const historyIds = Object.keys(data);
 
+    setChartCount(settings.isCombined ? 1 : Math.max(historyIds.length, 1));
+
     const formatValue = (value: number) => {
       if (isProportional) {
         return `${value.toFixed(2)}%`;

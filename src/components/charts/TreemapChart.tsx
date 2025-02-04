@@ -8,12 +8,10 @@ import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 import { chartsRequestBuilder } from "../../lib/request-builder.ts";
 import { huesDomain } from "../../lib/charts.ts";
 import { useSharedChartStore } from "../store/shared-chart.store.ts";
-
-interface TreemapData {
-  name: string;
-  value: number;
-  children?: TreemapData[];
-}
+import type {
+  TreemapData,
+  TreemapResponse,
+} from "../../models/treemap-response.ts";
 
 export const TreemapChart = () => {
   const { i18n } = useTranslation();
@@ -24,7 +22,7 @@ export const TreemapChart = () => {
   const sharedChart = useSharedChartStore((state) => state.sharedChart);
 
   const fetchData = async (settings: ChartsSettingsData) => {
-    const response: TreemapData[] = await fetch(
+    const response: TreemapResponse = await fetch(
       chartsRequestBuilder(settings, chartId),
     ).then((res) => res.json());
 
@@ -32,12 +30,13 @@ export const TreemapChart = () => {
   };
 
   const getChartOptions = (
-    data: TreemapData[],
+    response: TreemapResponse,
     settings: ChartsSettingsData,
   ): ReactEChartsProps["option"] => {
-    const { isProportional, isCombined, historyIds } = settings;
+    const { data, queriedHistoryIds } = response;
+    const { isProportional, isCombined } = settings;
 
-    const hasMultipleHistories = historyIds.length > 1;
+    const hasMultipleHistories = queriedHistoryIds.length > 1;
 
     const firstLevel = {
       itemStyle: {
@@ -51,7 +50,7 @@ export const TreemapChart = () => {
     };
 
     const historyTagProvider = (historyId: string, historyIdx: number) => {
-      if (historyIds.length === 1) {
+      if (queriedHistoryIds.length === 1) {
         return "";
       }
 
@@ -63,7 +62,9 @@ export const TreemapChart = () => {
     const dataWithNames = hasMultipleHistories
       ? data
           .sort(
-            (a, b) => historyIds.indexOf(b.name) - historyIds.indexOf(a.name),
+            (a, b) =>
+              queriedHistoryIds.indexOf(b.name) -
+              queriedHistoryIds.indexOf(a.name),
           )
           .map((node, idx) => {
             return {

@@ -6,6 +6,7 @@ import { checkUserHistories } from "../../../../../models/check-user-histories.t
 import { parseUrlYears } from "../../../../../lib/parse-url-years.ts";
 import { parseUrlSettings } from "../../../../../lib/parse-url-settings.ts";
 import { prisma } from "../../../../../lib/prisma.ts";
+import type { TreemapResponse } from "../../../../../models/treemap-response.ts";
 
 interface TrackLineRaw {
   artist: string;
@@ -61,7 +62,12 @@ export const GET: APIRoute = async ({ params, request }) => {
     isCombined,
   );
 
-  return new Response(JSON.stringify(treemapData), {
+  const response: TreemapResponse = {
+    data: treemapData,
+    queriedHistoryIds: historyIds,
+  };
+
+  return new Response(JSON.stringify(response), {
     headers: {
       "content-type": "application/json",
     },
