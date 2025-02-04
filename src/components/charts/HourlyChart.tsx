@@ -8,7 +8,10 @@ import type { HourlyData } from "../../models/hourly-data.ts";
 
 import { DynamicChart } from "../DynamicChart.tsx";
 import type { ChartsSettingsData } from "../ChartsSettings.tsx";
-import type { ReportResponse } from "../../models/report-response.ts";
+import type {
+  ReportResponse,
+  ReportTreeData,
+} from "../../models/report-response.ts";
 import { ChartContainer } from "../ChartContainer.tsx";
 import { useSharedChartStore } from "../store/shared-chart.store.ts";
 import { formatHour, minutesToHumanReadable } from "../../lib/time-utils.ts";
@@ -31,7 +34,7 @@ export const HourlyChart = () => {
   });
 
   const fetchData = async (settings: ChartsSettingsData) => {
-    const response: ReportResponse<HourlyData[]> = await fetch(
+    const response: ReportResponse<ReportTreeData<HourlyData[]>> = await fetch(
       chartsRequestBuilder(settings, chartId),
     ).then((res) => res.json());
 
@@ -39,11 +42,11 @@ export const HourlyChart = () => {
   };
 
   const getChartOptions = (
-    response: ReportResponse<HourlyData[]>,
+    response: ReportResponse<ReportTreeData<HourlyData[]>>,
     settings: ChartsSettingsData,
     customOptions?: HourlyChartCustomOptions,
   ): ReactEChartsProps["option"] => {
-    const { data } = response;
+    const { data, queriedHistoryIds } = response;
     const { isCombined, isProportional } = settings;
     const { stacked } = customOptions || { stacked: false };
 
@@ -51,11 +54,9 @@ export const HourlyChart = () => {
 
     const isMobile = screenWidth < 768;
 
-    const historyIds = Object.keys(data);
+    const historyIds = queriedHistoryIds;
     let xDomain: string[] = [];
     const series: EChartsOption["series"] = [];
-
-    historyIds.sort();
 
     let years: string[] = [];
 

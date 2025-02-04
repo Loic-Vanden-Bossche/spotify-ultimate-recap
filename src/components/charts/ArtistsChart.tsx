@@ -6,7 +6,10 @@ import { DynamicChart, type DynamicOptions } from "../DynamicChart.tsx";
 import { ChartContainer } from "../ChartContainer.tsx";
 import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 import { chartsRequestBuilder } from "../../lib/request-builder.ts";
-import type { ReportResponse } from "../../models/report-response.ts";
+import type {
+  ReportResponse,
+  ReportTreeData,
+} from "../../models/report-response.ts";
 import { getYDomain } from "../../lib/charts.ts";
 import { useSharedChartStore } from "../store/shared-chart.store.ts";
 import type { ReactEChartsProps } from "../ReactECharts.tsx";
@@ -37,7 +40,7 @@ export const ArtistsChart = () => {
       settings.isCombined ? 1 : Math.max(settings.historyIds.length, 1),
     );
 
-    const response: ReportResponse<ArtistsData[]> = await fetch(
+    const response: ReportResponse<ReportTreeData<ArtistsData[]>> = await fetch(
       chartsRequestBuilder(settings, chartId),
     ).then((res) => res.json());
 
@@ -45,15 +48,15 @@ export const ArtistsChart = () => {
   };
 
   const getChartOptions = (
-    response: ReportResponse<ArtistsData[]>,
+    response: ReportResponse<ReportTreeData<ArtistsData[]>>,
     settings: ChartsSettingsData,
     customOptions?: ArtistsChartCustomOptions,
   ): DynamicOptions => {
-    const { data } = response;
+    const { data, queriedHistoryIds } = response;
     const { isCombined, isProportional } = settings;
     const { stacked } = customOptions || { stacked: false };
 
-    const historyIds = Object.keys(data);
+    const historyIds = queriedHistoryIds;
 
     setChartCount(settings.isCombined ? 1 : Math.max(historyIds.length, 1));
 

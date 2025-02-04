@@ -1,7 +1,10 @@
 import type { APIRoute } from "astro";
 import { Prisma } from "@prisma/client";
 import type { HourlyData } from "../../../../../models/hourly-data.ts";
-import type { ReportResponse } from "../../../../../models/report-response.ts";
+import type {
+  ReportResponse,
+  ReportTreeData,
+} from "../../../../../models/report-response.ts";
 import { prisma } from "../../../../../lib/prisma.ts";
 import { checkUserHistories } from "../../../../../models/check-user-histories.ts";
 import { parseUrlYears } from "../../../../../lib/parse-url-years.ts";
@@ -45,7 +48,9 @@ export const GET: APIRoute = async ({ params, request }) => {
     ? Prisma.empty
     : Prisma.sql`AND "year" = ANY (${years})`;
 
-  const getData = async (): Promise<ReportResponse<HourlyData[]>> => {
+  const getData = async (): Promise<
+    ReportResponse<ReportTreeData<HourlyData[]>>
+  > => {
     if (isCombined) {
       const totalSelect = isProportional
         ? Prisma.sql`
@@ -65,8 +70,9 @@ export const GET: APIRoute = async ({ params, request }) => {
         `,
       );
 
-      const result: ReportResponse<HourlyData[]> = {
+      const result: ReportResponse<ReportTreeData<HourlyData[]>> = {
         data: {},
+        queriedHistoryIds: historyIds,
       };
 
       queryResult.forEach((hourlyData) => {
@@ -106,8 +112,9 @@ export const GET: APIRoute = async ({ params, request }) => {
         `,
       );
 
-      const result: ReportResponse<HourlyData[]> = {
+      const result: ReportResponse<ReportTreeData<HourlyData[]>> = {
         data: {},
+        queriedHistoryIds: historyIds,
       };
 
       queryResult.forEach((hourlyData) => {

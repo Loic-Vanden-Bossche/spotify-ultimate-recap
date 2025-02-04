@@ -8,10 +8,8 @@ import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 import { chartsRequestBuilder } from "../../lib/request-builder.ts";
 import { huesDomain } from "../../lib/charts.ts";
 import { useSharedChartStore } from "../store/shared-chart.store.ts";
-import type {
-  TreemapData,
-  TreemapResponse,
-} from "../../models/treemap-response.ts";
+import type { TreemapData } from "../../models/treemap-data.ts";
+import type { ReportResponse } from "../../models/report-response.ts";
 
 export const TreemapChart = () => {
   const { i18n } = useTranslation();
@@ -22,7 +20,7 @@ export const TreemapChart = () => {
   const sharedChart = useSharedChartStore((state) => state.sharedChart);
 
   const fetchData = async (settings: ChartsSettingsData) => {
-    const response: TreemapResponse = await fetch(
+    const response: ReportResponse<TreemapData[]> = await fetch(
       chartsRequestBuilder(settings, chartId),
     ).then((res) => res.json());
 
@@ -30,7 +28,7 @@ export const TreemapChart = () => {
   };
 
   const getChartOptions = (
-    response: TreemapResponse,
+    response: ReportResponse<TreemapData[]>,
     settings: ChartsSettingsData,
   ): ReactEChartsProps["option"] => {
     const { data, queriedHistoryIds } = response;
@@ -63,8 +61,8 @@ export const TreemapChart = () => {
       ? data
           .sort(
             (a, b) =>
-              queriedHistoryIds.indexOf(b.name) -
-              queriedHistoryIds.indexOf(a.name),
+              queriedHistoryIds.indexOf(a.name) -
+              queriedHistoryIds.indexOf(b.name),
           )
           .map((node, idx) => {
             return {

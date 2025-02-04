@@ -14,10 +14,11 @@ export const getSharedChartFromId = async (
                "SharedChart"."isProportional",
                "SharedChart"."chart",
                "SharedChart"."rawQpSettings",
-               ARRAY_AGG(DISTINCT SCH."historyId") AS "histories",
+               ARRAY_AGG(SH."id" ORDER BY SH."createdAt") AS "histories",
                ARRAY_AGG(DISTINCT SCY."year") AS "years"
         FROM "SharedChart"
                  INNER JOIN "SharedChartHistory" SCH on "SharedChart".id = SCH."sharedChartId"
+                 INNER JOIN "SpotifyHistory" SH on SCH."historyId" = SH."id"
                  INNER JOIN "SharedChartYear" SCY on "SharedChart".id = SCY."sharedChartId"
         WHERE "SharedChart"."id" = ${shareId}
         GROUP BY "SharedChart"."id"

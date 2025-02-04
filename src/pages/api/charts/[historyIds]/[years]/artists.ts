@@ -7,7 +7,10 @@ import { parseUrlYears } from "../../../../../lib/parse-url-years.ts";
 import { parseUrlSettings } from "../../../../../lib/parse-url-settings.ts";
 import { prisma } from "../../../../../lib/prisma.ts";
 import type { ArtistsData } from "../../../../../models/artists-data.ts";
-import type { ReportResponse } from "../../../../../models/report-response.ts";
+import type {
+  ReportResponse,
+  ReportTreeData,
+} from "../../../../../models/report-response.ts";
 
 export const prerender = false;
 
@@ -48,7 +51,9 @@ export const GET: APIRoute = async ({ params, request }) => {
     ? Prisma.empty
     : Prisma.sql`AND "year" = ANY (${years})`;
 
-  const getData = async (): Promise<ReportResponse<ArtistsData[]>> => {
+  const getData = async (): Promise<
+    ReportResponse<ReportTreeData<ArtistsData[]>>
+  > => {
     if (isCombined) {
       const valueSelect = isProportional
         ? Prisma.sql`CAST(CAST(SUM(a."msPlayed") AS INTEGER) * 100.0 / SUM(a."totalMsPlayed") AS FLOAT)`
@@ -83,12 +88,13 @@ export const GET: APIRoute = async ({ params, request }) => {
                  )
             SELECT *
             FROM CombinedArtists
-            ORDER BY "historyId", "value" DESC;
+            ORDER BY "historyId" DESC;
         `,
       );
 
-      const result: ReportResponse<ArtistsData[]> = {
+      const result: ReportResponse<ReportTreeData<ArtistsData[]>> = {
         data: {},
+        queriedHistoryIds: historyIds,
       };
 
       queryResult.forEach((artistData) => {
@@ -123,8 +129,9 @@ export const GET: APIRoute = async ({ params, request }) => {
         `,
       );
 
-      const result: ReportResponse<ArtistsData[]> = {
+      const result: ReportResponse<ReportTreeData<ArtistsData[]>> = {
         data: {},
+        queriedHistoryIds: historyIds,
       };
 
       queryResult.forEach((hourlyData) => {

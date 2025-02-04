@@ -3,8 +3,3 @@ export interface TreemapData {
   value: number;
   children?: TreemapData[];
 }
-
-export interface TreemapResponse {
-  data: TreemapData[];
-  queriedHistoryIds: string[];
-}
