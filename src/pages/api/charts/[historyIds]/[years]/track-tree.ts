@@ -19,7 +19,7 @@ interface TrackLineRaw {
   proportionPerArtist: number;
   proportionPerAlbumArtist: number;
   historyId: string;
-  year?: number;
+  year: number;
 }
 
 interface TreemapNode {
@@ -54,106 +54,107 @@ export const GET: APIRoute = async ({ params, request }) => {
     ? Prisma.empty
     : Prisma.sql`AND st."year" = ANY (${years})`;
 
-  const getResult = async () => {
-    const result = await prisma.$queryRaw<TrackLineRaw[]>(
-      Prisma.sql`
-        SELECT * FROM "TracksStatistics" WHERE "historyId" = ANY (${historyIds}) ${yearsCondition} ORDER BY "totalMinutesPlayed" DESC;
-      `,
+  const treemapData = await fetchTrackStatistics(
+    historyIds,
+    yearsCondition,
+    isProportional,
+    isCombined,
+  );
+
+  return new Response(JSON.stringify(treemapData), {
+    headers: {
+      "content-type": "application/json",
+    },
+  });
+};
+
+const fetchTrackStatistics = async (
+  historyIds: string[],
+  yearsCondition: Prisma.Sql,
+  isProportional: boolean,
+  isCombined: boolean,
+): Promise<TreemapNode[]> => {
+  const result = await prisma.$queryRaw<TrackLineRaw[]>(
+    Prisma.sql`
+            SELECT * FROM "TracksStatistics"
+            WHERE "historyId" = ANY (${historyIds}) ${yearsCondition}
+            ORDER BY "totalMinutesPlayed" DESC;
+        `,
+  );
+
+  const multipleHistories = historyIds.length > 1;
+  const treemapData: TreemapNode[] = [];
+  const historyMap = new Map<string, TreemapNode>();
+  const yearMap = new Map<string, TreemapNode>();
+  const artistMap = new Map<string, TreemapNode>();
+  const albumMap = new Map<string, TreemapNode>();
+
+  const ratePerTrack = 100 / result.length;
+
+  result.forEach((trackData) => {
+    const {
+      artist,
+      album,
+      track,
+      totalMinutesPlayed,
+      historyId,
+      year,
+      proportionPerAlbumArtistYear,
+      proportionPerArtistYear,
+      proportionPerHistory,
+      proportionPerYear,
+      proportionPerAlbumArtist,
+      proportionPerArtist,
+    } = trackData;
+
+    const realYear = isCombined ? 0 : year;
+
+    const parentNode: TreemapNode[] = determineParentNode(
+      multipleHistories,
+      isCombined,
+      historyId,
+      realYear,
+      treemapData,
+      historyMap,
+      yearMap,
+      isProportional,
+      totalMinutesPlayed,
+      isCombined ? ratePerTrack : proportionPerHistory,
     );
 
-    const multipleHistories = historyIds.length > 1;
+    const artistNode = getOrCreateNode(
+      artistMap,
+      parentNode,
+      `${historyId}-${realYear}-${artist}`,
+      artist,
+      isProportional,
+      isCombined ? proportionPerHistory : proportionPerYear,
+      totalMinutesPlayed,
+    );
 
-    let treemapData: TreemapNode[] = [];
-    const historyMap = new Map<string, TreemapNode>();
-    const yearMap = new Map<string, TreemapNode>();
-    const artistMap = new Map<string, TreemapNode>();
-    const albumMap = new Map<string, TreemapNode>();
+    const albumNode = getOrCreateNode(
+      albumMap,
+      artistNode.children!,
+      `${historyId}-${realYear}-${artist}-${album}`,
+      album,
+      isProportional,
+      isCombined ? proportionPerArtist : proportionPerArtistYear,
+      totalMinutesPlayed,
+      !isCombined,
+    );
 
-    result.forEach(
-      ({
-        artist,
-        album,
-        track,
-        proportionPerAlbumArtistYear,
-        proportionPerArtistYear,
-        proportionPerHistory,
-        proportionPerYear,
-        proportionPerAlbumArtist,
-        proportionPerArtist,
-        totalMinutesPlayed,
-        historyId,
-        year,
-      }) => {
-        let parentNode: TreemapNode[];
+    if (isCombined) {
+      const trackNode = albumNode.children!.find((node) => node.name === track);
 
-        if (multipleHistories) {
-          let historyNode = historyMap.get(historyId);
-          if (!historyNode) {
-            historyNode = { name: historyId, value: 0, children: [] };
-            treemapData.push(historyNode);
-            historyMap.set(historyId, historyNode);
-          }
-          historyNode.value += isProportional
-            ? proportionPerHistory
-            : totalMinutesPlayed;
-          parentNode = historyNode.children!;
+      if (trackNode) {
+        if (!isProportional) {
+          trackNode.value += totalMinutesPlayed;
 
-          if (!isCombined) {
-            const yearKey = `${historyId}-${year}`;
-            let yearNode = yearMap.get(yearKey);
-            if (!yearNode) {
-              yearNode = { name: String(year), value: 0, children: [] };
-              parentNode.push(yearNode);
-              yearMap.set(yearKey, yearNode);
-            }
-            yearNode.value += isProportional
-              ? proportionPerHistory
-              : totalMinutesPlayed;
-            parentNode = yearNode.children!;
-          }
-        } else if (!isCombined) {
-          let yearNode = yearMap.get(String(year));
-          if (!yearNode) {
-            yearNode = { name: String(year), value: 0, children: [] };
-            treemapData.push(yearNode);
-            yearMap.set(String(year), yearNode);
-          }
-          yearNode.value += isProportional
-            ? proportionPerHistory
-            : totalMinutesPlayed;
-          parentNode = yearNode.children!;
-        } else {
-          parentNode = treemapData;
+          albumNode.value += totalMinutesPlayed;
         }
-
-        const artistKey = isCombined
-          ? `${historyId}-${artist}`
-          : `${historyId}-${year}-${artist}`;
-        let artistNode = artistMap.get(artistKey);
-        if (!artistNode) {
-          artistNode = { name: artist, value: 0, children: [] };
-          parentNode.push(artistNode);
-          artistMap.set(artistKey, artistNode);
-        }
-        artistNode.value += isProportional
-          ? isCombined
-            ? proportionPerHistory
-            : proportionPerYear
-          : totalMinutesPlayed;
-
-        const albumKey = isCombined
-          ? `${historyId}-${artist}-${album}`
-          : `${historyId}-${year}-${artist}-${album}`;
-        let albumNode = albumMap.get(albumKey);
-        if (!albumNode) {
-          albumNode = { name: album, value: 0, children: [] };
-          artistNode.children!.push(albumNode);
-          albumMap.set(albumKey, albumNode);
-        }
+      } else {
         albumNode.value += isProportional
-          ? isCombined
-            ? proportionPerArtist
-            : proportionPerArtistYear
+          ? proportionPerArtist
           : totalMinutesPlayed;
 
         albumNode.children!.push({
@@ -164,93 +165,195 @@ export const GET: APIRoute = async ({ params, request }) => {
               : proportionPerAlbumArtistYear
             : totalMinutesPlayed,
         });
-      },
-    );
-
-    if (isCombined) {
-      const topArtists = new Set<string>(
-        [...artistMap.entries()]
-          .sort((a, b) => b[1].value - a[1].value)
-          .slice(0, 100)
-          .map(([_, node]) => node.name),
-      );
-
-      if (multipleHistories) {
-        treemapData.forEach((historyNode) => {
-          historyNode.children = historyNode.children?.filter((artistNode) => {
-            return topArtists.has(artistNode.name);
-          });
-        });
-      } else {
-        treemapData = treemapData.filter((artistNode) =>
-          topArtists.has(artistNode.name),
-        );
       }
     } else {
-      const artistTotalsPerYear = new Map<string, number>();
-
-      result.forEach(({ artist, year, proportionPerYear }) => {
-        const artistYearKey = `${year}-${artist}`;
-        artistTotalsPerYear.set(
-          artistYearKey,
-          (artistTotalsPerYear.get(artistYearKey) || 0) + proportionPerYear,
-        );
+      albumNode.children!.push({
+        name: track,
+        value: isProportional
+          ? isCombined
+            ? proportionPerAlbumArtist
+            : proportionPerAlbumArtistYear
+          : totalMinutesPlayed,
       });
-
-      const topArtistsPerYear = new Map<string, Set<string>>();
-
-      const artistsByYear = [...artistTotalsPerYear.entries()].reduce(
-        (acc, [key, total]) => {
-          const [year, artist] = key.split("-");
-          if (!acc[year]) acc[year] = [];
-          acc[year].push({ artist, total });
-          return acc;
-        },
-        {} as Record<string, { artist: string; total: number }[]>,
-      );
-
-      Object.entries(artistsByYear).forEach(([year, artists]) => {
-        const topArtists = new Set(
-          artists
-            .sort((a, b) => b.total - a.total) // Sort in descending order
-            .slice(0, 100)
-            .map(({ artist }) => artist),
-        );
-        topArtistsPerYear.set(year, topArtists);
-      });
-
-      if (multipleHistories) {
-        treemapData.forEach((historyNode) => {
-          historyNode.children = historyNode.children
-            ?.map((yearNode) => ({
-              ...yearNode,
-              children: yearNode.children?.filter((artistNode) => {
-                return topArtistsPerYear
-                  .get(yearNode.name)
-                  ?.has(artistNode.name);
-              }),
-            }))
-            .filter(
-              (yearNode) => yearNode.children && yearNode.children.length > 0,
-            );
-        });
-      } else {
-        treemapData.forEach((yearData) => {
-          yearData.children = yearData.children?.filter((artistNode) => {
-            return topArtistsPerYear.get(yearData.name)?.has(artistNode.name);
-          });
-        });
-      }
     }
-
-    return treemapData;
-  };
-
-  const treemapData = await getResult();
-
-  return new Response(JSON.stringify(treemapData), {
-    headers: {
-      "content-type": "application/json",
-    },
   });
+
+  return filterTopArtists(
+    treemapData,
+    artistMap,
+    isCombined,
+    multipleHistories,
+    result,
+  );
+};
+
+const determineParentNode = (
+  multipleHistories: boolean,
+  isCombined: boolean,
+  historyId: string,
+  year: number,
+  treemapData: TreemapNode[],
+  historyMap: Map<string, TreemapNode>,
+  yearMap: Map<string, TreemapNode>,
+  isProportional: boolean,
+  totalMinutesPlayed: number,
+  proportionPerYear: number,
+) => {
+  if (multipleHistories) {
+    const historyNode = getOrCreateNode(
+      historyMap,
+      treemapData,
+      historyId,
+      historyId,
+      isProportional,
+      proportionPerYear,
+      totalMinutesPlayed,
+    );
+    if (!isCombined) {
+      return getOrCreateNode(
+        yearMap,
+        historyNode.children!,
+        `${historyId}-${year}`,
+        String(year),
+        isProportional,
+        proportionPerYear,
+        totalMinutesPlayed,
+      ).children!;
+    }
+    return historyNode.children!;
+  } else if (!isCombined) {
+    return getOrCreateNode(
+      yearMap,
+      treemapData,
+      String(year),
+      String(year),
+      isProportional,
+      proportionPerYear,
+      totalMinutesPlayed,
+    ).children!;
+  }
+  return treemapData;
+};
+
+const getOrCreateNode = (
+  map: Map<string, TreemapNode>,
+  parent: TreemapNode[],
+  key: string,
+  name: string,
+  isProportional: boolean,
+  proportionalValue: number,
+  absoluteValue: number,
+  increment: boolean = true,
+): TreemapNode => {
+  let node = map.get(key);
+  if (!node) {
+    node = { name, value: 0, children: [] };
+    parent.push(node);
+    map.set(key, node);
+  }
+
+  if (increment) {
+    node.value += isProportional ? proportionalValue : absoluteValue;
+  }
+  return node;
+};
+
+const filterTopArtists = (
+  treemapData: TreemapNode[],
+  artistMap: Map<string, TreemapNode>,
+  isCombined: boolean,
+  multipleHistories: boolean,
+  result: TrackLineRaw[],
+) => {
+  if (isCombined) {
+    const topArtists = new Set(
+      [...artistMap.values()]
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 100)
+        .map((node) => node.name),
+    );
+    return filterTreemapData(treemapData, multipleHistories, topArtists);
+  }
+
+  const topArtistsPerYear = computeTopArtistsPerYear(result);
+  return filterTreemapByYear(treemapData, multipleHistories, topArtistsPerYear);
+};
+
+const computeTopArtistsPerYear = (result: TrackLineRaw[]) => {
+  const artistTotalsPerYear = new Map<string, number>();
+  result.forEach(({ artist, year, proportionPerYear }) => {
+    const key = `${year}-${artist}`;
+    artistTotalsPerYear.set(
+      key,
+      (artistTotalsPerYear.get(key) || 0) + proportionPerYear,
+    );
+  });
+
+  return Object.entries(
+    [...artistTotalsPerYear.entries()].reduce(
+      (acc, [key, total]) => {
+        const [year, artist] = key.split("-");
+        if (!acc[year]) acc[year] = [];
+        acc[year].push({ artist, total });
+        return acc;
+      },
+      {} as Record<string, { artist: string; total: number }[]>,
+    ),
+  ).reduce((map, [year, artists]) => {
+    map.set(
+      year,
+      new Set(
+        artists
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 100)
+          .map(({ artist }) => artist),
+      ),
+    );
+    return map;
+  }, new Map<string, Set<string>>());
+};
+
+const filterTreemapData = (
+  treemapData: TreemapNode[],
+  multipleHistories: boolean,
+  topArtists: Set<string>,
+) => {
+  if (multipleHistories) {
+    treemapData.forEach((historyNode) => {
+      historyNode.children = historyNode.children?.filter((artistNode) =>
+        topArtists.has(artistNode.name),
+      );
+    });
+  } else {
+    return treemapData.filter((artistNode) => topArtists.has(artistNode.name));
+  }
+  return treemapData;
+};
+
+const filterTreemapByYear = (
+  treemapData: TreemapNode[],
+  multipleHistories: boolean,
+  topArtistsPerYear: Map<string, Set<string>>,
+) => {
+  if (multipleHistories) {
+    treemapData.forEach((historyNode) => {
+      historyNode.children = historyNode.children
+        ?.map((yearNode) => ({
+          ...yearNode,
+          children: yearNode.children?.filter((artistNode) =>
+            topArtistsPerYear.get(yearNode.name)?.has(artistNode.name),
+          ),
+        }))
+        .filter(
+          (yearNode) => yearNode.children && yearNode.children.length > 0,
+        );
+    });
+  } else {
+    treemapData.forEach((yearData) => {
+      yearData.children = yearData.children?.filter((artistNode) =>
+        topArtistsPerYear.get(yearData.name)?.has(artistNode.name),
+      );
+    });
+  }
+  return treemapData;
 };
