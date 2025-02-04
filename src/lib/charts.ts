@@ -1,4 +1,4 @@
-const huesDomain = [
+export const huesDomain = [
   142, // Green
   277, // Purple
   0, // Red

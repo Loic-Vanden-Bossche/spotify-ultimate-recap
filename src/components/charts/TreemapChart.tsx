@@ -1,11 +1,13 @@
-import * as echarts from "echarts";
 import type { TreemapSeriesLevelOption } from "echarts/types/src/chart/treemap/TreemapSeries.js";
+import { useTranslation } from "react-i18next";
 import { type ReactEChartsProps } from "../ReactECharts.tsx";
 import { DynamicChart } from "../DynamicChart.tsx";
 import { minutesToHumanReadable } from "../../lib/time-utils.ts";
 import { ChartContainer } from "../ChartContainer.tsx";
 import type { ChartsSettingsData } from "../ChartsSettings.tsx";
 import { chartsRequestBuilder } from "../../lib/request-builder.ts";
+import { huesDomain } from "../../lib/charts.ts";
+import { useSharedChartStore } from "../store/shared-chart.store.ts";
 
 interface TreemapData {
   name: string;
@@ -14,7 +16,12 @@ interface TreemapData {
 }
 
 export const TreemapChart = () => {
+  const { i18n } = useTranslation();
+  const { t } = i18n;
+
   const chartId = "track-tree";
+
+  const sharedChart = useSharedChartStore((state) => state.sharedChart);
 
   const fetchData = async (settings: ChartsSettingsData) => {
     const response: TreemapData[] = await fetch(
@@ -28,50 +35,104 @@ export const TreemapChart = () => {
     data: TreemapData[],
     settings: ChartsSettingsData,
   ): ReactEChartsProps["option"] => {
-    const formatUtil = echarts.format;
+    const { isProportional, isCombined, historyIds } = settings;
 
-    const { isProportional } = settings;
+    const hasMultipleHistories = historyIds.length > 1;
 
-    const getLevelOption = (): TreemapSeriesLevelOption[] => [
-      {
-        itemStyle: {
-          borderWidth: 3,
-          gapWidth: 5,
-          borderColor: "green",
-        },
-        upperLabel: {
-          show: false,
-        },
+    const firstLevel = {
+      itemStyle: {
+        borderWidth: 3,
+        gapWidth: 5,
+        borderColor: "black",
       },
-      {
-        itemStyle: {
-          borderWidth: 1,
-          gapWidth: 2,
-          borderColor: "blue",
-        },
+      upperLabel: {
+        show: false,
       },
-      {
-        itemStyle: {
-          borderWidth: 1,
-          gapWidth: 1,
-          borderColor: "orange",
+    };
+
+    const historyTagProvider = (historyId: string, historyIdx: number) => {
+      if (historyIds.length === 1) {
+        return "";
+      }
+
+      const isShared = sharedChart && sharedChart.histories.includes(historyId);
+
+      return `${t("History")} ${historyIdx + 1}${isShared ? " - " + t("Shared chart") : ""}`;
+    };
+
+    const dataWithNames = hasMultipleHistories
+      ? data
+          .sort(
+            (a, b) => historyIds.indexOf(b.name) - historyIds.indexOf(a.name),
+          )
+          .map((node, idx) => {
+            return {
+              ...node,
+              name: historyTagProvider(node.name, idx),
+            };
+          })
+      : data;
+
+    const getLevelOption = (): TreemapSeriesLevelOption[] => {
+      const colorMapping: Partial<TreemapSeriesLevelOption> = {
+        colorMappingBy: "id",
+        color: huesDomain.map((hueIndex) => `hsl(${hueIndex}, 70%, 70%)`),
+      };
+      const levels: TreemapSeriesLevelOption[] = [firstLevel];
+
+      if (hasMultipleHistories) {
+        levels.push({
+          itemStyle: {
+            borderWidth: 1,
+            gapWidth: 2,
+            borderColor: "blue",
+          },
+        });
+      }
+
+      if (!isCombined) {
+        levels.push({
+          itemStyle: {
+            borderWidth: 1,
+            gapWidth: 1,
+            borderColor: "orange",
+          },
+        });
+      }
+
+      return [
+        ...[
+          ...levels.slice(0, levels.length - 1),
+          {
+            ...levels[levels.length - 1],
+            ...colorMapping,
+          },
+        ],
+        {
+          itemStyle: {
+            borderWidth: 1,
+            gapWidth: 1,
+            borderColor: "purple",
+          },
         },
-      },
-      {
-        itemStyle: {
-          borderWidth: 1,
-          gapWidth: 1,
-          borderColor: "pink",
+        {
+          itemStyle: {
+            borderWidth: 1,
+            gapWidth: 1,
+            borderColor: "pink",
+          },
+          colorMappingBy: "id",
+          colorSaturation: [0.5, 0.7],
         },
-      },
-      {
-        itemStyle: {
-          borderWidth: 1,
-          gapWidth: 1,
-          borderColor: "purple",
+        {
+          itemStyle: {
+            borderWidth: 1,
+            gapWidth: 1,
+            borderColor: "purple",
+          },
         },
-      },
-    ];
+      ];
+    };
 
     const format = (value: number) => {
       if (isProportional) {
@@ -93,7 +154,6 @@ export const TreemapChart = () => {
         borderWidth: 2,
         padding: 10,
         borderRadius: 10,
-
         formatter: (params) => {
           const info = params as unknown as {
             value: number;
@@ -107,9 +167,13 @@ export const TreemapChart = () => {
           const title = tree
             .map((node, i) => {
               const displaySeparator = i === tree.length - 1 ? "" : " > ";
-              return `<span class="text-wrap"> ${formatUtil.encodeHTML(node.name)}&nbsp;${displaySeparator}&nbsp;</span>`;
+              return `<span class="text-wrap"> ${node.name}&nbsp;${displaySeparator}&nbsp;</span>`;
             })
             .join("");
+
+          if (!title) {
+            return "";
+          }
 
           return `
             <h1 class="flex flex-wrap max-w-80">
@@ -137,7 +201,7 @@ export const TreemapChart = () => {
             borderColor: "#fff",
           },
           levels: getLevelOption(),
-          data: data,
+          data: dataWithNames,
         },
       ],
     };
@@ -146,7 +210,7 @@ export const TreemapChart = () => {
   return (
     <ChartContainer
       chartId={chartId}
-      title={"Carte interractive des sons écoutés"}
+      title={t("Interactive map of listened music")}
     >
       <div className={"h-[80vh]"}>
         <DynamicChart fetchData={fetchData} getChartOptions={getChartOptions} />
