@@ -11,14 +11,26 @@ export const huesDomain = [
   80, // Orange
 ];
 
+export const getDomainFromIndex = (idx: number) => {
+  return huesDomain[idx % huesDomain.length];
+};
+
+export const colorFromIndexValueAndMax = (
+  value: number,
+  idx: number,
+  max: number,
+) => {
+  const hueIndex = getDomainFromIndex(idx);
+  const lightness = 30 + (value / max) * 40;
+  return `hsl(${hueIndex}, 70%, ${lightness}%)`;
+};
+
 export const getYDomain = (data: number[], idx: number) => {
   return data.map((value) => {
-    const hueIndex = huesDomain[idx % huesDomain.length];
-    const lightness = 30 + (value / Math.max(...data)) * 40;
     return {
       value,
       itemStyle: {
-        color: `hsl(${hueIndex}, 70%, ${lightness}%)`,
+        color: colorFromIndexValueAndMax(value, idx, Math.max(...data)),
       },
     };
   });

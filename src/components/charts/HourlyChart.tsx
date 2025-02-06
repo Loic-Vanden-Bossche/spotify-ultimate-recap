@@ -116,7 +116,7 @@ export const HourlyChart = () => {
       if (!isCombined && isProportional) {
         return t("Proportion in the year");
       } else if (isProportional) {
-        return t("Total proportion listened");
+        return t("Total proportion listened to");
       }
 
       return t("Total minutes listened");

@@ -53,7 +53,7 @@ export const GET: APIRoute = async ({ params, request }) => {
 
   const yearsCondition = allYearsSelected
     ? Prisma.empty
-    : Prisma.sql`AND st."year" = ANY (${years})`;
+    : Prisma.sql`AND ts."year" = ANY (${years})`;
 
   const treemapData = await fetchTrackStatistics(
     historyIds,
@@ -82,7 +82,7 @@ const fetchTrackStatistics = async (
 ): Promise<TreemapNode[]> => {
   const result = await prisma.$queryRaw<TrackLineRaw[]>(
     Prisma.sql`
-            SELECT * FROM "TracksStatistics"
+            SELECT * FROM "TracksStatistics" ts
             WHERE "historyId" = ANY (${historyIds}) ${yearsCondition}
             ORDER BY "totalMinutesPlayed" DESC;
         `,

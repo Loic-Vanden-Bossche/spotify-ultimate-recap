@@ -36,6 +36,9 @@
     "Already selected in shared chart": "Déjà sélectionné via le graphique partagé",
     "The user does not allow you to change chart settings": "L'utilisateur ne vous permet pas de modifier les paramètres du graphique",
     "No data has been imported. Please upload your Spotify data to view your recap!": "Aucune donnée n'a été importée. Veuillez importer vos données Spotify pour afficher votre récap !",
-    "Interactive map of listened music": "Carte interactive de la musique écoutée"
+    "Interactive map of listened music": "Carte interactive de la musique écoutée",
+    "Distribution of listening hours over the months": "Distribution des heures d'écoutes au fil des mois",
+    "Month of the year": "Mois de l'année",
+    "Month": "Mois"
   }
 }
