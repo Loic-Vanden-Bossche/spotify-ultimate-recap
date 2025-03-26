@@ -99,4 +99,6 @@ WITH TracksPerYear AS (SELECT st."historyId",
                                              AND tpy."album" = t."album"
                                              AND tpy."track" = t."track")
 SELECT *
-FROM FinalResults
+FROM FinalResults;
+
+CREATE UNIQUE INDEX idx_tracksstatistics_unique ON "TracksStatistics" ("historyId", "year", "track", "artist", "album");

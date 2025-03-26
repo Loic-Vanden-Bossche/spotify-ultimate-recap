@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { waitOneSecond } from "./time-utils.ts";
+import { convertToTimeZoneISO, waitOneSecond } from "./time-utils.ts";
 import { prisma } from "./prisma.ts";
 import type { JSONFile } from "../models/json-file.ts";
 import type { SpotifyTrackJSON } from "../models/spotify-track-json.ts";
@@ -39,6 +39,7 @@ export const processImportData = async (
           ...acc,
           ...jsonFile.content.map((track) => ({
             ...track,
+            ts: convertToTimeZoneISO(track.ts, "Europe/Paris"),
             fileName: jsonFile.filename,
           })),
         ],
@@ -113,7 +114,7 @@ export const processImportData = async (
 
           return {
             historyId: history.id,
-            time: new Date(track.ts),
+            time: new Date(`${track.ts}Z`),
             platform: track.platform,
             msPlayed: track.ms_played,
             connCountry: track.conn_country,
@@ -144,6 +145,10 @@ export const processImportData = async (
 
   await prisma.$executeRaw(
     Prisma.sql`REFRESH MATERIALIZED VIEW CONCURRENTLY "SpotifyAggregated"`,
+  );
+
+  await prisma.$executeRaw(
+    Prisma.sql`REFRESH MATERIALIZED VIEW CONCURRENTLY "TracksStatistics"`,
   );
 
   const endTime = new Date();

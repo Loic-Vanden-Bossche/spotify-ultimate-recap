@@ -106,6 +106,25 @@ export const MonthlyChart = () => {
       return `${t("History")} ${historyIdx + 1}${isShared ? " - " + t("Shared chart") : ""} - `;
     };
 
+    const getMonthNameFromIndex = (index: number) => {
+      const monthsEn = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+
+      return t(monthsEn[index - 1]);
+    };
+
     if (isCombined) {
       historyIds.forEach((historyId) => {
         const historyData = data[historyId]["combined"];
@@ -117,6 +136,10 @@ export const MonthlyChart = () => {
           });
         });
       });
+
+      xDomainArray = Array.from(xDomainMap.getAll()).map(
+        ({ year, month }) => `${getMonthNameFromIndex(month)} ${year}`,
+      );
 
       historyIds.forEach((historyId, idx) => {
         const historyData = data[historyId]["combined"];
@@ -152,7 +175,11 @@ export const MonthlyChart = () => {
         });
       });
 
-      xDomainArray = Array.from(xDomain).sort((a, b) => Number(a) - Number(b));
+      const domain = Array.from(xDomain)
+        .map((m) => Number(m))
+        .sort((a, b) => a - b);
+
+      xDomainArray = domain.map((m) => getMonthNameFromIndex(m));
 
       historyIds.forEach((historyId, idx) => {
         const historyData = data[historyId];
@@ -160,8 +187,8 @@ export const MonthlyChart = () => {
         Object.entries(historyData).forEach(([year, yearData]) => {
           const seriesData: (number | null)[] = [];
 
-          xDomainArray.forEach((month) => {
-            const item = yearData.find((i) => i.month === Number(month));
+          domain.forEach((month) => {
+            const item = yearData.find((i) => i.month === month);
 
             seriesData.push(
               item ? (isProportional ? item.value : item.value) : null,
@@ -246,7 +273,7 @@ export const MonthlyChart = () => {
       xAxis: {
         name: isCombined ? t("Month of the year") : t("Month"),
         type: "category",
-        data: isCombined ? Array.from(xDomainMap.keys()) : xDomainArray,
+        data: xDomainArray,
         nameLocation: "middle",
         nameGap: 30,
       },
