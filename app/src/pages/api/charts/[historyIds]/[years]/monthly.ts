@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { Prisma } from "../../../../../../prisma/generated/client";
+import { Prisma } from "../../../../../generated/client";
 import type {
   ReportResponse,
   ReportTreeData,

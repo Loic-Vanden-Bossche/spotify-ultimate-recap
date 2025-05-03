@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../prisma/generated/client";
+import { PrismaClient } from "../generated/client";
 
 export const prisma = new PrismaClient({
   datasourceUrl: process.env.POSTGRES_PRISMA_URL,

@@ -1,6 +1,6 @@
 import { convertToTimeZoneISO, waitOneSecond } from "./time-utils.ts";
 import { prisma } from "./prisma.ts";
-import { Prisma } from "../../prisma/generated/client";
+import { Prisma } from "../generated/client";
 import type { JSONFile } from "../models/json-file.ts";
 import type { SpotifyTrackJSON } from "../models/spotify-track-json.ts";
 

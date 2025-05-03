@@ -1,5 +1,5 @@
 import { prisma } from "./prisma.ts";
-import { Prisma } from "../../prisma/generated/client";
+import { Prisma } from "../generated/client";
 import type { SharedChartFullData } from "../models/shared-chart-full-data.ts";
 
 export const getSharedChartFromId = async (
