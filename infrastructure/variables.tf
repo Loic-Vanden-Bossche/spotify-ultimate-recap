@@ -32,3 +32,13 @@ variable "domain" {
   type        = string
   default     = "spotify-ultimate-recap.chbrx.com"
 }
+
+variable "app_image_tag" {
+  description = "Docker image tag for the app"
+  type        = string
+}
+
+variable "migrate_image_tag" {
+  description = "Docker image tag for the migration"
+  type        = string
+}
