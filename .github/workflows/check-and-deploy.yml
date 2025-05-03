@@ -41,7 +41,7 @@ jobs:
       - name: Set repository name
         id: repo
         run: |
-          IMAGE_TAG="ghcr.io/${GITHUB_REPOSITORY,,}-runner:latest"
+          IMAGE_TAG="ghcr.io/${GITHUB_REPOSITORY,,}:latest"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - id: check
