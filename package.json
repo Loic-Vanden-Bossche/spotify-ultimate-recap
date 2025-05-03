@@ -1,57 +1,16 @@
 {
-  "name": "spotify-ultimate-recap",
-  "type": "module",
-  "version": "0.0.1",
   "scripts": {
-    "astro": "cross-env POSTGRES_PRISMA_URL=postgresql://root:root@localhost:5432/spotify-ultimate-recap astro",
-    "prisma": "cross-env POSTGRES_PRISMA_URL=postgresql://root:root@localhost:5432/spotify-ultimate-recap prisma",
-    "dev": "pnpm astro dev",
-    "build": "pnpm astro build",
-    "preview": "pnpm astro preview --host 0.0.0.0 --port 80",
-    "preview:build": "pnpm build && pnpm preview",
-    "prepare": "husky install"
-  },
-  "dependencies": {
-    "@astrojs/node": "^9.0.2",
-    "@astrojs/react": "^4.2.0",
-    "@astrojs/tailwind": "^6.0.0",
-    "@eslint/js": "^9.18.0",
-    "@types/adm-zip": "^0.5.7",
-    "@types/busboy": "^1.5.4",
-    "@types/react": "^19.0.4",
-    "@types/react-dom": "^19.0.2",
-    "adm-zip": "^0.5.16",
-    "astro": "^5.2.5",
-    "busboy": "^1.6.0",
-    "echarts": "^5.6.0",
-    "eslint-plugin-import": "^2.31.0",
-    "husky": "^9.1.7",
-    "i18next": "^24.2.1",
-    "i18next-browser-languagedetector": "^8.0.2",
-    "lint-staged": "^15.4.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-i18next": "^15.4.0",
-    "tailwindcss": "^3.4.17",
-    "typescript-eslint": "^8.20.0",
-    "uuid": "^11.0.5",
-    "zustand": "^5.0.3"
+    "check:astro": "cd app && npm run astro:check",
+    "check:terraform": "cd infrastructure && terraform fmt -check -diff"
   },
   "devDependencies": {
-    "@prisma/client": "^6.3.0",
-    "@prisma/extension-optimize": "^1.1.4",
-    "@typescript-eslint/parser": "^8.20.0",
-    "cross-env": "^7.0.3",
-    "eslint": "^9.18.0",
-    "eslint-plugin-astro": "^1.3.1",
-    "prettier": "^3.4.2",
-    "prettier-plugin-astro": "^0.14.1",
-    "prisma": "^6.3.0"
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.1"
   },
   "lint-staged": {
-    "*.{ts,tsx,astro}": [
-      "eslint --fix --max-warnings 0 . --ignore-pattern dist --ignore-pattern .astro"
+    "app/**/*.{ts,tsx,astro}": [
+      "npm run check:astro"
     ],
-    "*.{ts,tsx,astro,js,css,md}": "prettier --write"
+    "infrastructure/**/*.{tf,tftest.hcl}": "npm run check:terraform"
   }
 }
