@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../../../../prisma/generated/client";
 import type { HourlyData } from "../../../../../models/hourly-data.ts";
 import type {
   ReportResponse,

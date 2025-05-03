@@ -1,0 +1,19 @@
+name: Check And Deploy Spotify Ulitmate Recap
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/**'
+      - '.github/workflows/check-and-deploy.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/**'
+      - '.github/workflows/check-and-deploy.yml'
+
+
+env:
+  CI: true

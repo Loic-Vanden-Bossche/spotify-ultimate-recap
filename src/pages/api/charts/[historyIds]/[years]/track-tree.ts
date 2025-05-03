@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../../../../prisma/generated/client";
 import { parseUrlHistories } from "../../../../../lib/parse-url-histories.ts";
 import { extractUserId } from "../../../../../models/extract-user-id.ts";
 import { checkUserHistories } from "../../../../../models/check-user-histories.ts";

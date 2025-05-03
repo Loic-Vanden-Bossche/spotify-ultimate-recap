@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-import { withOptimize } from "@prisma/extension-optimize";
+import { PrismaClient } from "../../prisma/generated/client";
 
 export const prisma = new PrismaClient({
   datasourceUrl: process.env.POSTGRES_PRISMA_URL,
@@ -10,12 +9,6 @@ export const prisma = new PrismaClient({
     },
   ],
 });
-
-const optimizeApiKey = process.env.OPTIMIZE_API_KEY;
-
-if (optimizeApiKey) {
-  prisma.$extends(withOptimize({ apiKey: optimizeApiKey }));
-}
 
 if (process.env.NODE_ENV === "development") {
   prisma.$on("query", (e) => {

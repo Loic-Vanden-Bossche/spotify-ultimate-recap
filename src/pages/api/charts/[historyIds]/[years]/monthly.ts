@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../../../../prisma/generated/client";
 import type {
   ReportResponse,
   ReportTreeData,
@@ -72,7 +72,7 @@ export const GET: APIRoute = async ({ params, request }) => {
                  CAST(EXTRACT(MONTH FROM "time") AS INTEGER) AS "month",
                  ${totalSelect}    AS "value"
           FROM "SpotifyTrack"
-          WHERE "historyId" = ANY (${userHistoryIds})
+          WHERE "historyId" = ANY (${historyIds})
               ${yearsCondition}
           GROUP BY "year", "month", "historyId"
           ORDER BY "year", "month", "historyId"
