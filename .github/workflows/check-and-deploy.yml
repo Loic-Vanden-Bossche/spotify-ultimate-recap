@@ -94,9 +94,16 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.SCW_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.SCW_SECRET_KEY }}
       TF_VAR_repository_name: ${{ github.repository }}
+<<<<<<< Updated upstream
       TF_VAR_database_url: "aa"
       TF_VAR_database_password: "bb"
       TF_VAR_database_username: "cc"
+=======
+      TF_VAR_app_image_tag: ${{ needs.build-and-push-app.outputs.image_tag }}
+      TF_VAR_migrate_image_tag: ${{ needs.build-and-push-app.outputs.migrate_image_tag }}
+      TF_VAR_database_password: "user"
+      TF_VAR_database_username: "password"
+>>>>>>> Stashed changes
 
     permissions:
       pull-requests: write
