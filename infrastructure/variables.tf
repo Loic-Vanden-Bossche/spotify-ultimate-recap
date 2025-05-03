@@ -21,3 +21,14 @@ variable "database_password" {
   type        = string
   sensitive   = true
 }
+
+variable "repository_name" {
+  description = "GitHub repository name"
+  type        = string
+}
+
+variable "domain" {
+  description = "Domain for the app service"
+  type        = string
+  default     = "spotify-ultimate-recap.chbrx.com"
+}
