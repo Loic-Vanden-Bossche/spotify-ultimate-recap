@@ -46,7 +46,7 @@ jobs:
 
       - id: check
         run: |
-          if [ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]; then
+          if [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "skipped=false" >> $GITHUB_OUTPUT
             exit 0
           fi
