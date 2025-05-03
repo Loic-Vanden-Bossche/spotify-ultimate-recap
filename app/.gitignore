@@ -1,0 +1,6 @@
+dist/
+
+# generated types
+.astro/
+
+generated/

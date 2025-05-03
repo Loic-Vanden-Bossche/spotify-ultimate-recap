@@ -76,12 +76,6 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
-# build output
-dist/
-
-# generated types
-.astro/
-
 # dependencies
 node_modules/
 
@@ -97,5 +91,3 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
-
-generated/

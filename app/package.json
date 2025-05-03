@@ -8,7 +8,6 @@
     "build": "astro build",
     "preview": "astro preview --host 0.0.0.0 --port 80",
     "preview:build": "build && preview",
-    "prepare": "husky",
     "astro:check": "eslint --fix --max-warnings 0 . --ignore-pattern dist --ignore-pattern .astro"
   },
   "dependencies": {
