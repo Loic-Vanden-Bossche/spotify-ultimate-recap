@@ -6,13 +6,13 @@ on:
       - main
     paths:
       - 'infrastructure/**'
-      - '.github/workflows/check-and-deploy.yml'
+      - '.github/workflows/infrastructure-and-deploy.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'infrastructure/**'
-      - '.github/workflows/check-and-deploy.yml'
+      - '.github/workflows/infrastructure-and-deploy.yml'
 
 
 env:
@@ -176,7 +176,12 @@ jobs:
         run: exit 1
 
       - name: Run Migration Job
-        run: terraform apply -var="migrate_db=true" -target=module.app.kubernetes_job.db_migration -target=module.app.random_id.db_migration -auto-approve
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply \
+          -var="migrate_db=true" \
+          -target=module.app.kubernetes_job.db_migration \
+          -replace=module.app.random_id.db_migration[0] \
+          -auto-approve
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
