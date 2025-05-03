@@ -176,7 +176,7 @@ jobs:
         run: exit 1
 
       - name: Run Migration Job
-        run: terraform apply -target=module.app.kubernetes_job.db_migration -auto-approve
+        run: terraform apply -var="migrate_db=true" -target=module.app.kubernetes_job.db_migration -target=module.app.random_id.db_migration -auto-approve
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
