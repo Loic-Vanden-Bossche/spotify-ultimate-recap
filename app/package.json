@@ -8,8 +8,8 @@
     "build": "astro build",
     "preview": "astro preview --host 0.0.0.0 --port 80",
     "preview:build": "build && preview",
-    "lint": "eslint",
-    "astro:check": "eslint --fix --max-warnings 0 . --ignore-pattern dist --ignore-pattern .astro"
+    "lint": "eslint --max-warnings 0",
+    "astro:check": "eslint --fix --max-warnings 0 ."
   },
   "dependencies": {
     "@astrojs/node": "^9.2.1",
