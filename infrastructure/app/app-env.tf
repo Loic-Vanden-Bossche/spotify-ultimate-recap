@@ -5,9 +5,7 @@ resource "kubernetes_secret" "app_env" {
   }
 
   data = {
-    DB_URL      = var.database_url
-    DB_USERNAME = var.database_username
-    DB_PASSWORD = var.database_password
+    POSTGRES_PRISMA_URL = var.database_url
   }
 
   type = "Opaque"

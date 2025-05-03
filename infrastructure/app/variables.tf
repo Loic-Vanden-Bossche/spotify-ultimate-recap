@@ -14,18 +14,6 @@ variable "database_url" {
   sensitive   = true
 }
 
-variable "database_username" {
-  description = "Database username"
-  type        = string
-  sensitive   = true
-}
-
-variable "database_password" {
-  description = "Database password"
-  type        = string
-  sensitive   = true
-}
-
 variable "domain" {
   description = "Domain for the app service"
   type        = string
@@ -33,5 +21,10 @@ variable "domain" {
 
 variable "docker_secret_name" {
   description = "Name of the Docker secret"
+  type        = string
+}
+
+variable "migrate_image" {
+  description = "Docker image for the db migrations"
   type        = string
 }

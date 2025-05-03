@@ -36,13 +36,17 @@ jobs:
 
     outputs:
       image_tag: ${{ env.IMAGE_TAG }}
+      migrate_image_tag: ${{ env.MIGRATE_IMAGE_TAG }}
 
     steps:
-      - name: Set repository name
+      - name: Set images tags
         id: repo
         run: |
           IMAGE_TAG="ghcr.io/${GITHUB_REPOSITORY,,}:latest"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+          MIGRATE_IMAGE_TAG="ghcr.io/${GITHUB_REPOSITORY,,}-migrate:latest"
+          echo "MIGRATE_IMAGE_TAG=$MIGRATE_IMAGE_TAG" >> $GITHUB_ENV
 
       - id: check
         run: |
@@ -75,13 +79,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build and push app Docker image
         if: ${{ steps.check.outputs.skipped == 'false' }}
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ${{ env.IMAGE_TAG }}
+
+      - name: Build and push migrate Docker image
+        if: ${{ steps.check.outputs.skipped == 'false' }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          file: migrate.Dockerfile
+          tags: ${{ env.MIGRATE_IMAGE_TAG }}
 
   terraform:
     name: "Terraform"
@@ -93,9 +106,10 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.SCW_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.SCW_SECRET_KEY }}
       TF_VAR_repository_name: ${{ github.repository }}
-      TF_VAR_database_url: "aa"
-      TF_VAR_database_password: "bb"
-      TF_VAR_database_username: "cc"
+      TF_VAR_image_tag: ${{ needs.build-and-push-app.outputs.image_tag }}
+      TF_VAR_migrate_image_tag: ${{ needs.build-and-push-app.outputs.migrate_image_tag }}
+      TF_VAR_database_password: "user"
+      TF_VAR_database_username: "password"
 
     permissions:
       pull-requests: write
@@ -161,6 +175,9 @@ jobs:
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
         run: exit 1
+
+      - name: Run Migration Job
+        run: terraform apply -target=module.app.kubernetes_job.db_migration -auto-approve
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'

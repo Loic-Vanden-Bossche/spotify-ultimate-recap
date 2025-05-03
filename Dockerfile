@@ -27,10 +27,8 @@ FROM node:22-slim
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends openssl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create a non-root user
-RUN groupadd -r app && useradd -r -g app app
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -r app && useradd -r -g app app
 
 WORKDIR /app
 
@@ -43,7 +41,6 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.astro ./.astro
 COPY --from=builder /app/astro.config.* ./
-COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 # Set environment variables
