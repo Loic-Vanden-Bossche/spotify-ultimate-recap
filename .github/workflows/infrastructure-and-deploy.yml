@@ -108,8 +108,8 @@ jobs:
       TF_VAR_repository_name: ${{ github.repository }}
       TF_VAR_app_image_tag: ${{ needs.build-and-push-app.outputs.image_tag }}
       TF_VAR_migrate_image_tag: ${{ needs.build-and-push-app.outputs.migrate_image_tag }}
-      TF_VAR_database_password: "user"
-      TF_VAR_database_username: "password"
+      TF_VAR_database_username: "user"
+      TF_VAR_database_password: "password"
     permissions:
       pull-requests: write
 
