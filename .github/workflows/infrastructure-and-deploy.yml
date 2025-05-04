@@ -177,11 +177,12 @@ jobs:
 
       - name: Run Migration Job
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply \
-          -var="migrate_db=true" \
-          -target=module.app.kubernetes_job.db_migration \
-          -replace=module.app.random_id.db_migration[0] \
-          -auto-approve
+        run: |
+          terraform apply \
+            -var="migrate_db=true" \
+            -target=module.app.kubernetes_job.db_migration \
+            -replace=module.app.random_id.db_migration[0] \
+            -auto-approve
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
