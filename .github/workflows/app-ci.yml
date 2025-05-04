@@ -25,13 +25,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: list files
+        run: |
+          echo "Files in the app directory:"
+          ls -la
+          echo "Files in the root directory:"
+          ls -la src
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
+      - name: list files
+        run: |
+          echo "Files in the app directory:"
+          ls -la
+          echo "Files in the root directory:"
+          ls -la src
+
       - name: Install dependencies
         run: npm ci
+
+      - name: list files
+        run: |
+            echo "Files in the app directory:"
+            ls -la
+            echo "Files in the root directory:"
+            ls -la src
 
       - name: Lint
         run: npm run lint
