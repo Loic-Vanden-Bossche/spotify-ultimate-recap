@@ -6,7 +6,13 @@ import eslintImport from "eslint-plugin-import";
 
 export default [
   {
-    ignores: ["*.config.js", "dist/**/*", ".astro/**/*", "node_modules/**/*"],
+    ignores: [
+      "*.config.js",
+      "dist/**/*",
+      ".astro/**/*",
+      "node_modules/**/*",
+      "src/generated/client/*",
+    ],
   },
   ...tseslint.config(
     eslint.configs.recommended,
