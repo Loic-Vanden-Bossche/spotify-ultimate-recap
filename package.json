@@ -1,7 +1,7 @@
 {
   "scripts": {
     "check:astro": "cd app && npm run astro:check",
-    "check:terraform": "cd infrastructure && terraform fmt -check -diff"
+    "check:terraform": "cd infrastructure && terraform fmt -write=true -check -diff"
   },
   "devDependencies": {
     "husky": "^9.1.7",
