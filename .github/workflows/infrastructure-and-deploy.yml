@@ -6,13 +6,13 @@ on:
       - main
     paths:
       - 'infrastructure/**'
-      - '.github/workflows/check-and-deploy.yml'
+      - '.github/workflows/infrastructure-and-deploy.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'infrastructure/**'
-      - '.github/workflows/check-and-deploy.yml'
+      - '.github/workflows/infrastructure-and-deploy.yml'
 
 
 env:
@@ -106,11 +106,10 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.SCW_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.SCW_SECRET_KEY }}
       TF_VAR_repository_name: ${{ github.repository }}
-      TF_VAR_image_tag: ${{ needs.build-and-push-app.outputs.image_tag }}
+      TF_VAR_app_image_tag: ${{ needs.build-and-push-app.outputs.image_tag }}
       TF_VAR_migrate_image_tag: ${{ needs.build-and-push-app.outputs.migrate_image_tag }}
       TF_VAR_database_password: "user"
       TF_VAR_database_username: "password"
-
     permissions:
       pull-requests: write
 
@@ -177,7 +176,12 @@ jobs:
         run: exit 1
 
       - name: Run Migration Job
-        run: terraform apply -target=module.app.kubernetes_job.db_migration -auto-approve
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply \
+          -var="migrate_db=true" \
+          -target=module.app.kubernetes_job.db_migration \
+          -replace=module.app.random_id.db_migration[0] \
+          -auto-approve
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'

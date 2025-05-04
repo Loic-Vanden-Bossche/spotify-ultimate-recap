@@ -22,4 +22,5 @@ module "app" {
   namespace          = kubernetes_namespace.spotify_ultimate_recap.metadata[0].name
   domain             = var.domain
   docker_secret_name = data.kubernetes_secret.image_pull.metadata[0].name
+  migrate_db         = var.migrate_db
 }

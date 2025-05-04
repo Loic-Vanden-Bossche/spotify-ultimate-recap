@@ -1,6 +1,14 @@
+resource "random_id" "db_migration" {
+  count = var.migrate_db ? 1 : 0
+
+  byte_length = 4
+}
+
 resource "kubernetes_job" "db_migration" {
+  count = var.migrate_db ? 1 : 0
+
   metadata {
-    name      = "spotify-ultimate-recap-db-migration"
+    name      = "spotify-ultimate-recap-db-migration-${random_id.db_migration[count.index].hex}"
     namespace = var.namespace
 
     labels = {

@@ -42,3 +42,9 @@ variable "migrate_image_tag" {
   description = "Docker image tag for the migration"
   type        = string
 }
+
+variable "migrate_db" {
+  type        = bool
+  default     = false
+  description = "Whether to run the migration job"
+}

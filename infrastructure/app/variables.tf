@@ -28,3 +28,8 @@ variable "migrate_image" {
   description = "Docker image for the db migrations"
   type        = string
 }
+
+variable "migrate_db" {
+  description = "Whether to run the migration job"
+  type        = bool
+}

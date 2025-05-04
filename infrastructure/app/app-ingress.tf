@@ -10,6 +10,7 @@ resource "kubernetes_ingress_v1" "app_ingress" {
       "nginx.ingress.kubernetes.io/proxy-body-size"    = "10m",
       "nginx.ingress.kubernetes.io/proxy-read-timeout" = "60",
       "nginx.ingress.kubernetes.io/proxy-send-timeout" = "60"
+      "nginx.ingress.kubernetes.io/proxy-body-size"    = "100m",
     }
   }
 
