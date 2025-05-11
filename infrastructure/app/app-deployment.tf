@@ -30,6 +30,16 @@ resource "kubernetes_deployment" "app" {
           name  = "app"
           image = var.image
 
+          resources {
+            requests = {
+              memory = "512Mi"
+              cpu    = "250m"
+            }
+            limits = {
+              memory = "2Gi"
+            }
+          }
+
           env_from {
             secret_ref {
               name = kubernetes_secret.app_env.metadata[0].name

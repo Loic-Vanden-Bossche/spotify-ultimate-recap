@@ -36,6 +36,16 @@ resource "kubernetes_stateful_set" "postgres" {
           image             = "postgres:17-alpine"
           image_pull_policy = "IfNotPresent"
 
+          resources {
+            requests = {
+              memory = "512Mi"
+              cpu    = "250m"
+            }
+            limits = {
+              memory = "1Gi"
+            }
+          }
+
           env {
             name  = "POSTGRES_USER"
             value = var.database_username

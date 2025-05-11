@@ -7,10 +7,11 @@ resource "kubernetes_ingress_v1" "app_ingress" {
       "nginx.ingress.kubernetes.io/ssl-redirect"       = "true",
       "nginx.ingress.kubernetes.io/force-ssl-redirect" = "true",
       "nginx.ingress.kubernetes.io/backend-protocol"   = "HTTP",
-      "nginx.ingress.kubernetes.io/proxy-body-size"    = "10m",
-      "nginx.ingress.kubernetes.io/proxy-read-timeout" = "60",
-      "nginx.ingress.kubernetes.io/proxy-send-timeout" = "60"
+      "nginx.ingress.kubernetes.io/proxy-read-timeout" = "3600",
+      "nginx.ingress.kubernetes.io/proxy-send-timeout" = "3600"
       "nginx.ingress.kubernetes.io/proxy-body-size"    = "100m",
+      "nginx.ingress.kubernetes.io/proxy-buffering"    = "off"
+      "nginx.ingress.kubernetes.io/cache-enable"       = "false"
     }
   }
 
