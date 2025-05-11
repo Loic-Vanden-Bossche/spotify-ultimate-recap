@@ -13,6 +13,9 @@ export default defineConfig({
   server: {
     host: true,
   },
+  build: {
+    serverEntry: "server.mjs",
+  },
   adapter: node({
     mode: "standalone",
   }),

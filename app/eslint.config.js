@@ -12,6 +12,7 @@ export default [
       ".astro/**/*",
       "node_modules/**/*",
       "src/generated/client/*",
+      "entrypoint.mjs",
     ],
   },
   ...tseslint.config(

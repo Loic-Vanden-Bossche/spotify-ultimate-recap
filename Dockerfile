@@ -38,6 +38,7 @@ RUN npm config set ignore-scripts true && npm ci --omit=dev
 
 # Copy built assets
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/entrypoint.mjs ./entrypoint.mjs
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.astro ./.astro
 COPY --from=builder /app/astro.config.* ./
@@ -56,4 +57,4 @@ USER app
 EXPOSE 4321
 
 # Start the server
-CMD ["node", "./dist/server/entry.mjs"]
+CMD ["node", "entrypoint.mjs"]
