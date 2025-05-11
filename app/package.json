@@ -9,6 +9,7 @@
     "preview": "astro preview --host 0.0.0.0 --port 80",
     "preview:build": "build && preview",
     "lint": "eslint --max-warnings 0",
+    "start": "node entrypoint.mjs",
     "astro:check": "eslint --fix --max-warnings 0 ."
   },
   "dependencies": {
@@ -16,6 +17,7 @@
     "@astrojs/react": "^4.2.7",
     "@astrojs/tailwind": "^6.0.2",
     "@prisma/client": "^6.7.0",
+    "@pyroscope/nodejs": "^0.4.5",
     "adm-zip": "^0.5.16",
     "astro": "^5.7.10",
     "busboy": "^1.6.0",

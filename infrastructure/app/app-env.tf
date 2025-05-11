@@ -5,7 +5,8 @@ resource "kubernetes_secret" "app_env" {
   }
 
   data = {
-    POSTGRES_PRISMA_URL = var.database_url
+    POSTGRES_PRISMA_URL      = var.database_url
+    PYROSCOPE_SERVER_ADDRESS = "http://pyroscope.monitoring.svc.cluster.local:4040"
   }
 
   type = "Opaque"
