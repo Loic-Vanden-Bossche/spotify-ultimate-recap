@@ -39,14 +39,19 @@ jobs:
       migrate_image_tag: ${{ env.MIGRATE_IMAGE_TAG }}
 
     steps:
-      - name: Set images tags
-        id: repo
+      - name: Set image tags
+        id: set-tags
         run: |
-          IMAGE_TAG="ghcr.io/${GITHUB_REPOSITORY,,}:latest"
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          REPO="ghcr.io/${GITHUB_REPOSITORY,,}"
+          IMAGE_TAG="$REPO:${{ github.run_number }}"
+          LATEST_IMAGE_TAG="$REPO:latest"
+          MIGRATE_IMAGE_TAG="$REPO-migrate:${{ github.run_number }}"
+          LATEST_MIGRATE_IMAGE_TAG="$REPO-migrate:latest"
 
-          MIGRATE_IMAGE_TAG="ghcr.io/${GITHUB_REPOSITORY,,}-migrate:latest"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          echo "LATEST_IMAGE_TAG=$LATEST_IMAGE_TAG" >> $GITHUB_ENV
           echo "MIGRATE_IMAGE_TAG=$MIGRATE_IMAGE_TAG" >> $GITHUB_ENV
+          echo "LATEST_MIGRATE_IMAGE_TAG=$LATEST_MIGRATE_IMAGE_TAG" >> $GITHUB_ENV
 
       - id: check
         run: |
@@ -85,7 +90,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.IMAGE_TAG }}
+          tags: |
+            ${{ env.IMAGE_TAG }}
+            ${{ env.LATEST_IMAGE_TAG }}
 
       - name: Build and push migrate Docker image
         if: ${{ steps.check.outputs.skipped == 'false' }}
@@ -94,7 +101,9 @@ jobs:
           context: .
           push: true
           file: migrate.Dockerfile
-          tags: ${{ env.MIGRATE_IMAGE_TAG }}
+          tags: |
+            ${{ env.MIGRATE_IMAGE_TAG }}
+            ${{ env.LATEST_MIGRATE_IMAGE_TAG }}
 
   terraform:
     name: "Terraform"
